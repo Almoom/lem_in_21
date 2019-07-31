@@ -16,10 +16,17 @@
 # include <stdlib.h>
 # include <stdio.h>
 # include "libft/libft.h"
+# define TRUE 1
+# define FALSE 0
 
 typedef struct		s_lst
 {
 	struct s_lst	*next;
 	char			*line;
+	int				isnum;
+	int				isstart;
+	int				isend;
+	int				isxy;
+	int				isedge;
 }					t_lst;
 #endif
