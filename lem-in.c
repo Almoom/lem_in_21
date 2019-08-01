@@ -30,6 +30,7 @@ void	printer(t_lst *head)
 		printf("%d\t", tmp->isxy);
 		printf("%d\t", tmp->isedge);
 		printf("%s\t", tmp->name);
+		printf("%s\t", tmp->x_y);
 		printf("%s\n", tmp->line);
 		tmp = tmp->next;
 	}
@@ -44,6 +45,7 @@ t_lst	*create_list(char *s)
 	list->next = NULL;
 	list->line = ft_strdup(s);
 	list->name = NULL;
+	list->x_y = NULL;
 	list->isnum = 0;
 	list->isstart = 0;
 	list->isend = 0;
@@ -147,6 +149,7 @@ void	del_roll(t_lst **head)
 		tmp = (*head)->next;
 		ft_memdel((void**)(&(*head)->line));
 		ft_memdel((void**)(&(*head)->name));
+		ft_memdel((void**)(&(*head)->x_y));
 		free(*head);
 		*head = tmp;
 	}
@@ -154,23 +157,23 @@ void	del_roll(t_lst **head)
 	free(*head);
 }
 
-int		check_void(t_lst *head)
-{
-	t_lst *tmp;
-
-	tmp = head;
-	if (!head)
-		return (FALSE);
-	while (tmp->next)
-	{
-		if (!ft_strcmp(tmp->line, ""))
-			return (FALSE);
-		tmp = tmp->next;
-	}
-	if (!ft_strcmp(tmp->line, ""))
-		return (FALSE);
-	return (TRUE);
-}
+// int		check_void(t_lst *head)
+// {
+// 	t_lst *tmp;
+//
+// 	tmp = head;
+// 	if (!head)
+// 		return (FALSE);
+// 	while (tmp->next)
+// 	{
+// 		if (!ft_strcmp(tmp->line, ""))
+// 			return (FALSE);
+// 		tmp = tmp->next;
+// 	}
+// 	if (!ft_strcmp(tmp->line, ""))
+// 		return (FALSE);
+// 	return (TRUE);
+// }
 
 int		num_w(char **av)
 {
@@ -210,7 +213,8 @@ void	check_xy(t_lst *head)
 		if (num_w(av) == 3 || !ft_strcmp(tmp->line, "##start")
 		|| !ft_strcmp(tmp->line, "##end"))
 		{
-			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2]))
+			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2])
+			&& av[0][0] != 'L')
 				tmp->isxy = 1;
 		}
 		else
@@ -240,7 +244,7 @@ void	check_commands(t_lst *head)
 	}
 }
 
-void	name_knot(t_lst *head)
+void	split_name_xy(t_lst *head)
 {
 	t_lst *tmp;
 	char **av;
@@ -254,35 +258,31 @@ void	name_knot(t_lst *head)
 		{
 			av = ft_strsplit(tmp->line, ' ');
 			tmp->name = ft_strdup(av[0]);
+			tmp->x_y = ft_strjoin_free(ft_strjoin(av[1], " "), av[2], 1, 0);
 			del_split(av);
 		}
 		tmp = tmp->next;
 	}
 }
 
-void	check_dupl(t_lst *heada, t_lst *headb)
+void	check_dupl(t_lst *a, t_lst *b)
 {
 	t_lst *tmp;
 
-	tmp = headb;
-	if (!heada || !headb)
+	tmp = b;
+	if (!a || !b)
 		return ;
-	while (heada->next)
+	while (a->next)
 	{
-		printf("%s\n", "-");
-		while (headb->next)
+		while (b->next)
 		{
-			printf("%s\n", "--");
-			if (heada->name && headb->name && !ft_strcmp(heada->name, headb->name))
-			{
-				printf("%s__%s\n", heada->name, headb->name);
-				//tmp->isxy = 0;
-			}
-
-			headb = headb->next;
+			if ((a->name && b->name && !ft_strcmp(a->name, b->name) && a != b)
+			|| (a->x_y && b->x_y && !ft_strcmp(a->x_y, b->x_y) && a != b))
+				a->isxy = 0;
+			b = b->next;
 		}
-		headb = tmp;
-		heada = heada->next;
+		b = tmp;
+		a = a->next;
 	}
 }
 
@@ -300,13 +300,13 @@ int		main(void)
 	}
 	ft_memdel((void**)(&arr));
 	check_xy(head);
-	name_knot(head);
+	split_name_xy(head);
 	check_dupl(head, head);
 	check_commands(head);
-	if (check_void(head))
+	//if (check_void(head))
 		printer(head);
-	else
-		ft_putendl("ERROR");
+	// else
+	// 	ft_putendl("ERROR");
 	del_roll(&head);
 	return (0);
 }

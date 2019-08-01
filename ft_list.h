@@ -24,6 +24,7 @@ typedef struct		s_lst
 	struct s_lst	*next;
 	char			*line;
 	char			*name;
+	char			*x_y;
 	int				isnum;
 	int				isstart;
 	int				isend;
