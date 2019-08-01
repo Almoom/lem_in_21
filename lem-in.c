@@ -24,6 +24,12 @@ void	printer(t_lst *head)
 	}
 	while (tmp)
 	{
+		printf("%d\t", tmp->isnum);
+		printf("%d\t", tmp->isstart);
+		printf("%d\t", tmp->isend);
+		printf("%d\t", tmp->isxy);
+		printf("%d\t", tmp->isedge);
+		printf("%s\t", tmp->name);
 		printf("%s\n", tmp->line);
 		tmp = tmp->next;
 	}
@@ -35,8 +41,9 @@ t_lst	*create_list(char *s)
 
 	if (!(list = (t_lst*)malloc(sizeof(*list))))
 		return (NULL);
-	list->line = ft_strdup(s);
 	list->next = NULL;
+	list->line = ft_strdup(s);
+	list->name = NULL;
 	list->isnum = 0;
 	list->isstart = 0;
 	list->isend = 0;
@@ -51,9 +58,7 @@ int		not_comment(char *s)
 		return (FALSE);
 	if (s[0] == '#' && s[1] == '#')
 	{
-	 	if (!ft_strcmp(s, "##start"))
-			return (TRUE);
-		else if (!ft_strcmp(s, "##end"))
+	 	if (!ft_strcmp(s, "##start") || !ft_strcmp(s, "##end"))
 			return (TRUE);
 		else
 			return (FALSE);
@@ -141,6 +146,7 @@ void	del_roll(t_lst **head)
 	{
 		tmp = (*head)->next;
 		ft_memdel((void**)(&(*head)->line));
+		ft_memdel((void**)(&(*head)->name));
 		free(*head);
 		*head = tmp;
 	}
@@ -166,6 +172,120 @@ int		check_void(t_lst *head)
 	return (TRUE);
 }
 
+int		num_w(char **av)
+{
+	int i;
+
+	i = 0;
+	while (av[i])
+		i++;
+	return (i);
+}
+
+void	del_split(char **s)
+{
+	int i;
+
+	i = 0;
+	while (s[i])
+	{
+		free(s[i]);
+		i++;
+	}
+	free(s);
+}
+
+void	check_xy(t_lst *head)
+{
+	t_lst *tmp;
+	char **av;
+
+	if (!head)
+		return ;
+	if (head->next)
+		tmp = head->next;
+	while (tmp->next)
+	{
+		av = ft_strsplit(tmp->line, ' ');
+		if (num_w(av) == 3 || !ft_strcmp(tmp->line, "##start")
+		|| !ft_strcmp(tmp->line, "##end"))
+		{
+			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2]))
+				tmp->isxy = 1;
+		}
+		else
+		{
+			del_split(av);
+			break;
+		}
+		del_split(av);
+		tmp = tmp->next;
+	}
+}
+
+void	check_commands(t_lst *head)
+{
+	t_lst *tmp;
+
+	tmp = head;
+	if (!head)
+		return ;
+	while (tmp->next)
+	{
+		if (!ft_strcmp(tmp->line, "##start") && tmp->next->isxy == 1)
+			tmp->isstart = 1;
+		if (!ft_strcmp(tmp->line, "##end") && tmp->next->isxy == 1)
+			tmp->isend = 1;
+		tmp = tmp->next;
+	}
+}
+
+void	name_knot(t_lst *head)
+{
+	t_lst *tmp;
+	char **av;
+
+	tmp = head;
+	if (!head)
+		return ;
+	while (tmp->next)
+	{
+		if (tmp->isxy == 1)
+		{
+			av = ft_strsplit(tmp->line, ' ');
+			tmp->name = ft_strdup(av[0]);
+			del_split(av);
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	check_dupl(t_lst *heada, t_lst *headb)
+{
+	t_lst *tmp;
+
+	tmp = headb;
+	if (!heada || !headb)
+		return ;
+	while (heada->next)
+	{
+		printf("%s\n", "-");
+		while (headb->next)
+		{
+			printf("%s\n", "--");
+			if (heada->name && headb->name && !ft_strcmp(heada->name, headb->name))
+			{
+				printf("%s__%s\n", heada->name, headb->name);
+				//tmp->isxy = 0;
+			}
+
+			headb = headb->next;
+		}
+		headb = tmp;
+		heada = heada->next;
+	}
+}
+
 int		main(void)
 {
 	t_lst *head;
@@ -179,7 +299,10 @@ int		main(void)
 		ft_memdel((void**)(&arr));
 	}
 	ft_memdel((void**)(&arr));
-	printf("__%d\n", head->isnum);
+	check_xy(head);
+	name_knot(head);
+	check_dupl(head, head);
+	check_commands(head);
 	if (check_void(head))
 		printer(head);
 	else
