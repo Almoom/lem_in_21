@@ -31,6 +31,8 @@ void	printer(t_lst *head)
 		printf("%d\t", tmp->isedge);
 		printf("%s\t", tmp->name);
 		printf("%s\t", tmp->x_y);
+		printf("%s\t", tmp->name1);
+		printf("%s\t", tmp->name2);
 		printf("%s\n", tmp->line);
 		tmp = tmp->next;
 	}
@@ -46,6 +48,8 @@ t_lst	*create_list(char *s)
 	list->line = ft_strdup(s);
 	list->name = NULL;
 	list->x_y = NULL;
+	list->name1 = NULL;
+	list->name2 = NULL;
 	list->isnum = 0;
 	list->isstart = 0;
 	list->isend = 0;
@@ -144,17 +148,12 @@ void	del_roll(t_lst **head)
 
 	if (!(*head))
 		return ;
-	while ((*head)->next)
+	while ((*head))
 	{
 		tmp = (*head)->next;
-		ft_memdel((void**)(&(*head)->line));
-		ft_memdel((void**)(&(*head)->name));
-		ft_memdel((void**)(&(*head)->x_y));
-		free(*head);
+		del_list(head);
 		*head = tmp;
 	}
-	ft_memdel((void**)(&(*head)->line));
-	free(*head);
 }
 
 // int		check_void(t_lst *head)
@@ -198,6 +197,49 @@ void	del_split(char **s)
 	free(s);
 }
 
+int 		num_c(char *s, int ch)
+{
+	int i;
+	int count;
+
+	i = 0;
+	count = 0;
+	while (s[i])
+	{
+		if (s[i] == ch)
+			count++;
+		i++;
+	}
+	return (count);
+}
+
+void	check_edge(t_lst *head)
+{
+	t_lst *tmp;
+	char **av;
+
+	if (!head)
+		return ;
+	tmp = head;
+	while (tmp->next)
+	{
+		av = ft_strsplit(tmp->line, '-');
+		if (num_w(av) == 2 && num_c(tmp->line, '-') == 1)
+			tmp->isedge = 1;
+		else
+		{
+			del_split(av);
+			return ;
+		}
+		del_split(av);
+		tmp = tmp->next;
+	}
+	av = ft_strsplit(tmp->line, '-');
+	if (num_w(av) == 2 && num_c(tmp->line, '-') == 1)
+		tmp->isedge = 1;
+	del_split(av);
+}
+
 void	check_xy(t_lst *head)
 {
 	t_lst *tmp;
@@ -218,13 +260,12 @@ void	check_xy(t_lst *head)
 				tmp->isxy = 1;
 		}
 		else
-		{
-			del_split(av);
 			break;
-		}
 		del_split(av);
 		tmp = tmp->next;
 	}
+	del_split(av);
+	check_edge(tmp);
 }
 
 void	check_commands(t_lst *head)
@@ -265,7 +306,7 @@ void	split_name_xy(t_lst *head)
 	}
 }
 
-void	check_dupl(t_lst *a, t_lst *b)
+void	check_dupl_xy(t_lst *a, t_lst *b)
 {
 	t_lst *tmp;
 
@@ -286,6 +327,115 @@ void	check_dupl(t_lst *a, t_lst *b)
 	}
 }
 
+void	split_names(t_lst *head)
+{
+	t_lst *tmp;
+	char **av;
+
+	tmp = head;
+	if (!head)
+		return ;
+	while (tmp)
+	{
+		if (tmp->isedge == 1)
+		{
+			av = ft_strsplit(tmp->line, '-');
+			tmp->name1 = ft_strdup(av[0]);
+			tmp->name2 = ft_strdup(av[1]);
+			del_split(av);
+		}
+		tmp = tmp->next;
+	}
+}
+
+void	del_list(t_lst **del)
+{
+	ft_memdel((void**)(&(*del)->line));
+	ft_memdel((void**)(&(*del)->name));
+	ft_memdel((void**)(&(*del)->x_y));
+	ft_memdel((void**)(&(*del)->name1));
+	ft_memdel((void**)(&(*del)->name2));
+	free(*del);
+}
+
+t_lst	*check_dupl_names(t_lst **head)
+{
+	t_lst *tmp;
+	t_lst *h;
+
+	h = *head;
+	if (!(*head))
+		return (NULL);
+	while ((*head))
+	{
+		if ((*head)->isedge == 1 && !ft_strcmp((*head)->name1, (*head)->name2))
+		{
+			tmp->next = (*head)->next;
+			del_list(head);
+			(*head) = tmp->next;
+		}
+		else
+		{
+			tmp = (*head);
+			(*head) = (*head)->next;
+		}
+	}
+	return (h);
+}
+
+void 	check_new_names(t_lst *a, t_lst *b)
+{
+	t_lst *tmp;
+	int flag;
+
+	flag = 0;
+	tmp = b;
+	if (!a || !b)
+		return ;
+	while (a->next)
+	{
+		while (b->next)
+		{
+			if (b->name && a->name1 && a->name2 && (!ft_strcmp
+				(b->name, a->name1) || !ft_strcmp(b->name, a->name2)))
+				flag = 1;
+			b = b->next;
+		}
+		if (flag == 0)
+			a->isedge = 0;
+		else
+			flag = 0;
+		b = tmp;
+		a = a->next;
+	}
+}
+
+int		checker(t_lst *head)
+{
+	t_lst *t;
+	int start;
+	int end;
+
+	start = 0;
+	end = 0;
+	t = head;
+	if (!head)
+		return (FALSE);
+	while (t)
+	{
+		if (t->isnum + t->isstart + t->isend + t->isxy + t->isedge != 1)
+			return (FALSE);
+		if (t->isstart == 1)
+			start++;
+		if (t->isend == 1)
+			end++;
+		t = t->next;
+	}
+	if (start != 1 || end != 1)
+		return (FALSE);
+	return (TRUE);
+}
+
 int		main(void)
 {
 	t_lst *head;
@@ -301,12 +451,15 @@ int		main(void)
 	ft_memdel((void**)(&arr));
 	check_xy(head);
 	split_name_xy(head);
-	check_dupl(head, head);
+	check_dupl_xy(head, head);
 	check_commands(head);
-	//if (check_void(head))
+	split_names(head);
+	check_new_names(head, head);
+	head = check_dupl_names(&head);
+	if (checker(head))
 		printer(head);
-	// else
-	// 	ft_putendl("ERROR");
+	else
+		ft_putendl("ERROR");
 	del_roll(&head);
 	return (0);
 }

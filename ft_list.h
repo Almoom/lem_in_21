@@ -25,10 +25,13 @@ typedef struct		s_lst
 	char			*line;
 	char			*name;
 	char			*x_y;
+	char			*name1;
+	char			*name2;
 	int				isnum;
 	int				isstart;
 	int				isend;
 	int				isxy;
 	int				isedge;
 }					t_lst;
+void	del_list(t_lst **del);
 #endif
