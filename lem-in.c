@@ -12,7 +12,7 @@
 
 #include "ft_list.h"
 
-void	printer(t_lst *head)
+void	printer_valid(t_lst *head)
 {
 	t_lst *tmp;
 
@@ -38,7 +38,32 @@ void	printer(t_lst *head)
 	}
 }
 
-t_lst	*create_list(char *s)
+void	printer_mod(t_l *head)
+{
+	t_l *tmp;
+
+	tmp = head;
+	if (!tmp)
+	{
+		printf("%s\n", "(пусто)");
+		return ;
+	}
+	while (tmp)
+	{
+		printf("%s\t", tmp->line);
+		printf("%s\t", tmp->name1);
+		printf("%s\t", tmp->name2);
+		printf("%d\t", tmp->ants);
+		printf("%s\t", tmp->start);
+		printf("%s\n", tmp->end);
+		if (tmp->next)
+			tmp = tmp->next;
+		else
+			break;
+	}
+}
+
+t_lst	*create_list_valid(char *s)
 {
 	t_lst *list;
 
@@ -118,7 +143,7 @@ int		check_realnum(char *s)
 	return (check_realnum_add(s, i - j, j));
 }
 
-t_lst	*creator(t_lst *head, char *s)
+t_lst	*creator_valid(t_lst *head, char *s)
 {
 	t_lst *tmp;
 
@@ -127,7 +152,7 @@ t_lst	*creator(t_lst *head, char *s)
 	{
 		if (!head)
 		{
-			head = create_list(s);
+			head = create_list_valid(s);
 			tmp = head;
 			if (check_realnum(s))
 				head->isnum = 1;
@@ -136,13 +161,13 @@ t_lst	*creator(t_lst *head, char *s)
 		{
 			while (head->next)
 				head = head->next;
-			head->next = create_list(s);
+			head->next = create_list_valid(s);
 		}
 	}
 	return (tmp);
 }
 
-void	del_roll(t_lst **head)
+void	del_roll_valid(t_lst **head)
 {
 	t_lst *tmp;
 
@@ -151,28 +176,10 @@ void	del_roll(t_lst **head)
 	while ((*head))
 	{
 		tmp = (*head)->next;
-		del_list(head);
+		del_list_valid(head);
 		*head = tmp;
 	}
 }
-
-// int		check_void(t_lst *head)
-// {
-// 	t_lst *tmp;
-//
-// 	tmp = head;
-// 	if (!head)
-// 		return (FALSE);
-// 	while (tmp->next)
-// 	{
-// 		if (!ft_strcmp(tmp->line, ""))
-// 			return (FALSE);
-// 		tmp = tmp->next;
-// 	}
-// 	if (!ft_strcmp(tmp->line, ""))
-// 		return (FALSE);
-// 	return (TRUE);
-// }
 
 int		num_w(char **av)
 {
@@ -355,7 +362,7 @@ t_lst	*split_names(t_lst **head)
 	return (*head);
 }
 
-void	del_list(t_lst **del)
+void	del_list_valid(t_lst **del)
 {
 	ft_memdel((void**)(&(*del)->line));
 	ft_memdel((void**)(&(*del)->name));
@@ -365,33 +372,7 @@ void	del_list(t_lst **del)
 	free(*del);
 }
 
-t_lst	*check_dupl_names(t_lst **head)
-{
-	t_lst *tmp_prev;
-	t_lst *h;
-
-	h = *head;
-	if (!(*head))
-		return (NULL);
-	while ((*head))
-	{
-		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
-		((*head)->name1, (*head)->name2))
-		{
-			tmp_prev->next = (*head)->next;
-			del_list(head);
-			(*head) = tmp_prev->next;
-		}
-		else
-		{
-			tmp_prev = (*head);
-			(*head) = (*head)->next;
-		}
-	}
-	return (h);
-}
-
-void 	check_new_names(t_lst *a, t_lst *b)
+void	check_new_names(t_lst *a, t_lst *b)
 {
 	t_lst *tmp;
 	int flag;
@@ -444,66 +425,108 @@ int		checker(t_lst *head)
 	return (TRUE);
 }
 
-// void	check_dupl_edge(t_lst *a, t_lst *b)
-// {
-// 	t_lst *tmp;
-// 	// int flag;
-// 	//
-// 	// flag = 0;
-// 	tmp = b;
-// 	if (!a || !b)
-// 		return ;
-// 	while (a)
-// 	{
-// 		while (b)
-// 		{
-// 			if (a->isedge == 1 && b->isedge == 1 && ft_strcmp(a->line, b->line) && !ft_strcmp(a->name1, b->name1) && !ft_strcmp(a->name2, b->name2))
-// 			{
-//
-// 				printf("%s\n", a->line);
-// 					a->isedge = 0;
-// 			}
-// 			b = b->next;
-// 		}
-//
-// 		b = tmp;
-// 		a = a->next;
-// 	}
-// 	// t_lst *h;
-// 	// t_lst *tmp_prev;
-// 	// int flag;
-// 	//
-// 	// h = *b;
-// 	// flag = 0;
-// 	// if (!(*a) || !(*b))
-// 	// 	return (NULL);
-// 	// while ((*a))
-// 	// {
-// 	// 	while ((*b))
-// 	// 	{
-// 	// 		if ((*a)->isedge == 1 && (*b)->isedge == 1
-// 	// 		&& !ft_strcmp((*a)->name1, (*b)->name2)
-// 	// 		&& !ft_strcmp((*a)->name2, (*b)->name1) && (*b)->next)
-// 	// 		{
-// 	// 			printf("%s\n", "");
-// 	// 			tmp_prev->next = (*b)->next;
-// 	// 			del_list(b);
-// 	// 			(*b) = tmp_prev->next;
-// 	// 			break;
-// 	// 		}
-// 	// 		else
-// 	// 		{
-// 	// 			tmp_prev = *b;
-// 	// 			(*b) = (*b)->next;
-// 	// 		}
-// 	// 	}
-// 	// 	(*b) = h;
-// 	// 	(*a) = (*a)->next;
-// 	// }
-// 	// return (h);
-// }
+t_l		*create_list_mod(int ants, char *start, char *end, t_lst *map)
+{
+	t_l *list;
 
-int		main(void)
+	if (!(list = (t_l*)malloc(sizeof(*list))))
+		return (NULL);
+	list->line = ft_strdup(map->line);
+	list->name1 = ft_strdup(map->name1);
+	list->name2 = ft_strdup(map->name2);
+	list->ants = ants;
+	list->start = ft_strdup(start);
+	list->end = ft_strdup(end);
+	return (list);
+}
+
+t_l		*creator_mod(t_l *head, t_lst *map)
+{
+	t_l *tmp;
+
+	tmp = head;
+	while (head)
+	{
+		if (!head->next)
+			break;
+		if (!ft_strcmp(map->line, head->line))
+			return (tmp);
+		head = head->next;
+	}
+	if (!ft_strcmp(map->line, head->line))
+		return (tmp);
+	head->next = create_list_mod(head->ants, head->start, head->end, map);
+	return (tmp);
+}
+
+void	del_list_mod(t_l **del)
+{
+	ft_memdel((void**)(&(*del)->line));
+	ft_memdel((void**)(&(*del)->name1));
+	ft_memdel((void**)(&(*del)->name2));
+	ft_memdel((void**)(&(*del)->start));
+	ft_memdel((void**)(&(*del)->end));
+	free(*del);
+}
+
+void	del_roll_mod(t_l **head)
+{
+	t_l *tmp;
+
+	if (!(*head))
+		return ;
+	while ((*head))
+	{
+		tmp = (*head)->next;
+		del_list_mod(head);
+		*head = tmp;
+	}
+}
+
+void	modify(int ants, char *start, char *end, t_lst *map)
+{
+	t_l *head;
+	t_l *tmp;
+
+	while (map && !map->isedge)
+		map = map->next;
+	if (!map)
+		return ;
+	head = create_list_mod(ants, start, end, map);
+	tmp = head;
+	if (map->next)
+		map = map->next;
+	while (map)
+	{
+		if (map->name1 && map->name2 && ft_strcmp(map->name1, map->name2))
+			head = creator_mod(head, map);
+		map = map->next;
+	}
+	printer_mod(head);
+	del_roll_mod(&tmp);
+}
+
+void	read_and_modify(t_lst *map)
+{
+	t_lst *h;
+	int ants;
+	char *start;
+	char *end;
+
+	h = map;
+	while (map)
+	{
+		ants = map->isnum ? ft_atoi(map->line) : ants;
+		start = map->isstart ? ft_strdup(map->line) : start;
+		end = map->isend ? ft_strdup(map->line) : end;
+		map = map->next;
+	}
+	modify(ants, start, end, h);
+	free(start);
+	free(end);
+}
+
+int		main(void) 	//-----------------------------Валидация
 {
 	t_lst *head;
 	char *arr;
@@ -512,28 +535,21 @@ int		main(void)
 	arr = NULL;
 	while (ft_get_next_line(0, &arr))
 	{
-		head = creator(head, arr);
+		head = creator_valid(head, arr);
 		ft_memdel((void**)(&arr));
 	}
 	ft_memdel((void**)(&arr));
-	//Валидация
 	check_xy(head);
 	split_name_xy(head);
 	check_dupl_xy(head, head);
 	check_commands(head);
 	head = split_names(&head);
 	check_new_names(head, head);
+	printer_valid(head);
 	if (checker(head))
-		printer(head);
+		read_and_modify(head); //-----------------Модификация
 	else
 		ft_putendl("ERROR");
-	//Модификация
-	printf("\n");
-	head = check_dupl_names(&head);
-
-	//check_dupl_edge(head, head);
-	printer(head);
-
-	del_roll(&head);
+	del_roll_valid(&head);
 	return (0);
 }

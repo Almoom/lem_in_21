@@ -37,11 +37,12 @@ typedef struct		s_lst
 typedef struct		s_l
 {
 	struct s_l	*next;
+	char			*line;
 	char			*name1;
 	char			*name2;
-	int				ant_num;
+	int				ants;
 	char			*start;
 	char			*end;
 }					t_l;
-void	del_list(t_lst **del);
+void	del_list_valid(t_lst **del);
 #endif
