@@ -33,5 +33,15 @@ typedef struct		s_lst
 	int				isxy;
 	int				isedge;
 }					t_lst;
+
+typedef struct		s_l
+{
+	struct s_l	*next;
+	char			*name1;
+	char			*name2;
+	int				ant_num;
+	char			*start;
+	char			*end;
+}					t_l;
 void	del_list(t_lst **del);
 #endif

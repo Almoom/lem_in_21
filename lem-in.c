@@ -317,8 +317,9 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 	{
 		while (b->next)
 		{
-			if ((a->name && b->name && !ft_strcmp(a->name, b->name) && a != b)
+			if (((a->name && b->name && !ft_strcmp(a->name, b->name) && a != b)
 			|| (a->x_y && b->x_y && !ft_strcmp(a->x_y, b->x_y) && a != b))
+			&& ft_strcmp(a->line, b->line))
 				a->isxy = 0;
 			b = b->next;
 		}
@@ -327,25 +328,31 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 	}
 }
 
-void	split_names(t_lst *head)
+t_lst	*split_names(t_lst **head)
 {
 	t_lst *tmp;
 	char **av;
 
-	tmp = head;
+	tmp = *head;
 	if (!head)
-		return ;
+		return (NULL);
 	while (tmp)
 	{
 		if (tmp->isedge == 1)
 		{
 			av = ft_strsplit(tmp->line, '-');
-			tmp->name1 = ft_strdup(av[0]);
-			tmp->name2 = ft_strdup(av[1]);
+			tmp->name1 = ft_strcmp(av[0], av[1]) < 0 ?
+			ft_strdup(av[0]) : ft_strdup(av[1]);
+			tmp->name2 = ft_strcmp(av[0], av[1]) < 0 ?
+			ft_strdup(av[1]) : ft_strdup(av[0]);
+			free(tmp->line);
+			tmp->line = ft_strjoin_free
+			(ft_strjoin(tmp->name1, "-"), tmp->name2, 1, 0);
 			del_split(av);
 		}
 		tmp = tmp->next;
 	}
+	return (*head);
 }
 
 void	del_list(t_lst **del)
@@ -360,7 +367,7 @@ void	del_list(t_lst **del)
 
 t_lst	*check_dupl_names(t_lst **head)
 {
-	t_lst *tmp;
+	t_lst *tmp_prev;
 	t_lst *h;
 
 	h = *head;
@@ -368,15 +375,16 @@ t_lst	*check_dupl_names(t_lst **head)
 		return (NULL);
 	while ((*head))
 	{
-		if ((*head)->isedge == 1 && !ft_strcmp((*head)->name1, (*head)->name2))
+		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
+		((*head)->name1, (*head)->name2))
 		{
-			tmp->next = (*head)->next;
+			tmp_prev->next = (*head)->next;
 			del_list(head);
-			(*head) = tmp->next;
+			(*head) = tmp_prev->next;
 		}
 		else
 		{
-			tmp = (*head);
+			tmp_prev = (*head);
 			(*head) = (*head)->next;
 		}
 	}
@@ -436,6 +444,65 @@ int		checker(t_lst *head)
 	return (TRUE);
 }
 
+// void	check_dupl_edge(t_lst *a, t_lst *b)
+// {
+// 	t_lst *tmp;
+// 	// int flag;
+// 	//
+// 	// flag = 0;
+// 	tmp = b;
+// 	if (!a || !b)
+// 		return ;
+// 	while (a)
+// 	{
+// 		while (b)
+// 		{
+// 			if (a->isedge == 1 && b->isedge == 1 && ft_strcmp(a->line, b->line) && !ft_strcmp(a->name1, b->name1) && !ft_strcmp(a->name2, b->name2))
+// 			{
+//
+// 				printf("%s\n", a->line);
+// 					a->isedge = 0;
+// 			}
+// 			b = b->next;
+// 		}
+//
+// 		b = tmp;
+// 		a = a->next;
+// 	}
+// 	// t_lst *h;
+// 	// t_lst *tmp_prev;
+// 	// int flag;
+// 	//
+// 	// h = *b;
+// 	// flag = 0;
+// 	// if (!(*a) || !(*b))
+// 	// 	return (NULL);
+// 	// while ((*a))
+// 	// {
+// 	// 	while ((*b))
+// 	// 	{
+// 	// 		if ((*a)->isedge == 1 && (*b)->isedge == 1
+// 	// 		&& !ft_strcmp((*a)->name1, (*b)->name2)
+// 	// 		&& !ft_strcmp((*a)->name2, (*b)->name1) && (*b)->next)
+// 	// 		{
+// 	// 			printf("%s\n", "");
+// 	// 			tmp_prev->next = (*b)->next;
+// 	// 			del_list(b);
+// 	// 			(*b) = tmp_prev->next;
+// 	// 			break;
+// 	// 		}
+// 	// 		else
+// 	// 		{
+// 	// 			tmp_prev = *b;
+// 	// 			(*b) = (*b)->next;
+// 	// 		}
+// 	// 	}
+// 	// 	(*b) = h;
+// 	// 	(*a) = (*a)->next;
+// 	// }
+// 	// return (h);
+// }
+
 int		main(void)
 {
 	t_lst *head;
@@ -449,17 +516,24 @@ int		main(void)
 		ft_memdel((void**)(&arr));
 	}
 	ft_memdel((void**)(&arr));
+	//Валидация
 	check_xy(head);
 	split_name_xy(head);
 	check_dupl_xy(head, head);
 	check_commands(head);
-	split_names(head);
+	head = split_names(&head);
 	check_new_names(head, head);
-	head = check_dupl_names(&head);
 	if (checker(head))
 		printer(head);
 	else
 		ft_putendl("ERROR");
+	//Модификация
+	printf("\n");
+	head = check_dupl_names(&head);
+
+	//check_dupl_edge(head, head);
+	printer(head);
+
 	del_roll(&head);
 	return (0);
 }
