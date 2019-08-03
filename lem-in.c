@@ -56,10 +56,7 @@ void	printer_mod(t_l *head)
 		printf("%d\t", tmp->ants);
 		printf("%s\t", tmp->start);
 		printf("%s\n", tmp->end);
-		if (tmp->next)
-			tmp = tmp->next;
-		else
-			break;
+		tmp = tmp->next;
 	}
 }
 
@@ -324,10 +321,14 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 	{
 		while (b->next)
 		{
-			if (((a->name && b->name && !ft_strcmp(a->name, b->name) && a != b)
-			|| (a->x_y && b->x_y && !ft_strcmp(a->x_y, b->x_y) && a != b))
-			&& ft_strcmp(a->line, b->line))
-				a->isxy = 0;
+			if (a->isxy && b->isxy && ft_strcmp(a->line, b->line) && a != b)
+				if (((ft_strcmp(a->name, b->name) && !ft_strcmp(a->x_y, b->x_y))
+				|| (!ft_strcmp(a->name, b->name) && ft_strcmp(a->x_y, b->x_y))))
+					a->isxy = 0;
+			// if ((a->name && b->name && ft_strcmp(a->name, b->name)
+			// && a->x_y && b->x_y && !ft_strcmp(a->x_y, b->x_y) && a != b)
+			// || (a->name && b->name && !ft_strcmp(a->name, b->name)
+			// && a->x_y && b->x_y && ft_strcmp(a->x_y, b->x_y) && a != b))
 			b = b->next;
 		}
 		b = tmp;
@@ -420,7 +421,7 @@ int		checker(t_lst *head)
 			end++;
 		t = t->next;
 	}
-	if (start != 1 || end != 1)
+	if (start == 0 || end == 0)
 		return (FALSE);
 	return (TRUE);
 }
@@ -445,17 +446,15 @@ t_l		*creator_mod(t_l *head, t_lst *map)
 	t_l *tmp;
 
 	tmp = head;
-	while (head)
+	while (head->next)
 	{
-		if (!head->next)
-			break;
 		if (!ft_strcmp(map->line, head->line))
 			return (tmp);
 		head = head->next;
 	}
 	if (!ft_strcmp(map->line, head->line))
 		return (tmp);
-	head->next = create_list_mod(head->ants, head->start, head->end, map);
+	head->next = create_list_mod(tmp->ants, tmp->start, tmp->end, map);
 	return (tmp);
 }
 
@@ -486,14 +485,17 @@ void	del_roll_mod(t_l **head)
 void	modify(int ants, char *start, char *end, t_lst *map)
 {
 	t_l *head;
-	t_l *tmp;
 
-	while (map && !map->isedge)
+	head = NULL;
+	while (map)
+	{
+		if (map->isedge)
+			break;
 		map = map->next;
+	}
 	if (!map)
 		return ;
 	head = create_list_mod(ants, start, end, map);
-	tmp = head;
 	if (map->next)
 		map = map->next;
 	while (map)
@@ -503,27 +505,120 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 		map = map->next;
 	}
 	printer_mod(head);
-	del_roll_mod(&tmp);
+	del_roll_mod(&head);
 }
 
-void	read_and_modify(t_lst *map)
+void	read_and_modify(t_lst *map, char *start, char *end)
 {
 	t_lst *h;
 	int ants;
-	char *start;
-	char *end;
 
 	h = map;
 	while (map)
 	{
 		ants = map->isnum ? ft_atoi(map->line) : ants;
-		start = map->isstart ? ft_strdup(map->line) : start;
-		end = map->isend ? ft_strdup(map->line) : end;
+		if (map->isstart)
+		{
+			free(start);
+			start = ft_strdup(map->line);
+		}
+		if (map->isend)
+		{
+			free(end);
+			end = ft_strdup(map->line);
+		}
 		map = map->next;
 	}
 	modify(ants, start, end, h);
 	free(start);
 	free(end);
+}
+
+// t_lst	*check_dupl_names(t_lst **head)
+// {
+// 	t_lst *tmp_prev;
+// 	t_lst *h;
+//
+// 	h = *head;
+// 	if (!(*head))
+// 		return (NULL);
+// 	while ((*head))
+// 	{
+// 		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
+// 		((*head)->name1, (*head)->name2))
+// 		{
+// 			tmp_prev->next = (*head)->next;
+// 			del_list(head);
+// 			(*head) = tmp_prev->next;
+// 		}
+// 		else
+// 		{
+// 			tmp_prev = (*head);
+// 			(*head) = (*head)->next;
+// 		}
+// 	}
+// 	return (h);
+// }
+
+void 	check_dupl_start(t_lst *head)
+{
+	char *tmp;
+
+	tmp = NULL;
+	while (head->next)
+	{
+		if (head->isstart)
+			break;
+		head = head->next;
+	}
+	tmp = ft_strdup(head->next->line);
+	head = head->next;
+	while (head->next)
+	{
+		if (head->isstart && ft_strcmp(head->next->line, tmp))
+			head->isstart = 0;
+		head = head->next;
+	}
+	ft_memdel((void**)(&tmp));
+}
+
+void 	check_dupl_end(t_lst *head)
+{
+	char *tmp;
+
+	tmp = NULL;
+	while (head->next)
+	{
+		if (head->isend)
+			break;
+		head = head->next;
+	}
+	tmp = ft_strdup(head->next->line);
+	head = head->next;
+	while (head->next)
+	{
+		if (head->isend && ft_strcmp(head->next->line, tmp))
+			head->isend = 0;
+		head = head->next;
+	}
+	ft_memdel((void**)(&tmp));
+}
+
+void 	lemin(t_lst **head)
+{
+	check_xy(*head);
+	split_name_xy(*head);
+	check_dupl_xy(*head, *head);
+	check_commands(*head);
+	check_dupl_start(*head);
+	check_dupl_end(*head);
+	*head = split_names(head);
+	check_new_names(*head, *head);
+	printer_valid(*head);
+	if (checker(*head))
+		read_and_modify(*head, NULL, NULL); //----- Модификация
+	else
+		ft_putendl("ERROR");
 }
 
 int		main(void) 	//-----------------------------Валидация
@@ -539,17 +634,7 @@ int		main(void) 	//-----------------------------Валидация
 		ft_memdel((void**)(&arr));
 	}
 	ft_memdel((void**)(&arr));
-	check_xy(head);
-	split_name_xy(head);
-	check_dupl_xy(head, head);
-	check_commands(head);
-	head = split_names(&head);
-	check_new_names(head, head);
-	printer_valid(head);
-	if (checker(head))
-		read_and_modify(head); //-----------------Модификация
-	else
-		ft_putendl("ERROR");
+	lemin(&head);
 	del_roll_valid(&head);
 	return (0);
 }
