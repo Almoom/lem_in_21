@@ -251,24 +251,25 @@ void	check_xy(t_lst *head)
 
 	if (!head)
 		return ;
-	if (head->next)
-		tmp = head->next;
+	if (!(tmp = head->next))
+		return ;
 	while (tmp->next)
 	{
 		av = ft_strsplit(tmp->line, ' ');
-		if (num_w(av) == 3 || !ft_strcmp(tmp->line, "##start")
-		|| !ft_strcmp(tmp->line, "##end"))
+		if ((num_w(av) == 3 && av[0][0] != 'L') || !ft_strcmp
+		(tmp->line, "##start") || !ft_strcmp(tmp->line, "##end"))
 		{
-			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2])
-			&& av[0][0] != 'L')
+			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2]))
 				tmp->isxy = 1;
 		}
 		else
+		{
+			del_split(av);
 			break ;
+		}
 		del_split(av);
 		tmp = tmp->next;
 	}
-	del_split(av);
 	check_edge(tmp);
 }
 
@@ -482,6 +483,74 @@ void	del_roll_mod(t_l **head)
 	}
 }
 
+void	check_deadlock(t_l *a, t_l *b)
+{
+	t_l		*tmp;
+	int		flag1;
+	int		flag2;
+
+	flag1 = 0;
+	flag2 = 0;
+	tmp = b;
+	if (!a || !b)
+		return ;
+	while (a)
+	{
+		while (b)
+		{
+			if (a != b && a->ants > 0 && b->ants > 0)
+			{
+				if (!ft_strcmp(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2))
+				{
+					flag1 = 1;
+					//printf("%s\n", "-");
+				}
+				if (!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2))
+				{
+					flag2 = 1;
+					//printf("%s\n", "--");
+				}
+			}
+			b = b->next;
+		}
+		if (flag1 + flag2 != 2)
+		{
+			printf("%d\n", flag1 + flag2);
+			a->ants = 0;
+		}
+		flag1 = 0;
+		flag2 = 0;
+		b = tmp;
+		a = a->next;
+	}
+}
+
+// t_lst	*check_dupl_names(t_lst **head)
+// {
+// 	t_lst *tmp_prev;
+// 	t_lst *h;
+//
+// 	h = *head;
+// 	if (!(*head))
+// 		return (NULL);
+// 	while ((*head))
+// 	{
+// 		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
+// 		((*head)->name1, (*head)->name2))
+// 		{
+// 			tmp_prev->next = (*head)->next;
+// 			del_list(head);
+// 			(*head) = tmp_prev->next;
+// 		}
+// 		else
+// 		{
+// 			tmp_prev = (*head);
+// 			(*head) = (*head)->next;
+// 		}
+// 	}
+// 	return (h);
+// }
+
 void	modify(int ants, char *start, char *end, t_lst *map)
 {
 	t_l *head;
@@ -504,6 +573,9 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 			head = creator_mod(head, map);
 		map = map->next;
 	}
+	check_deadlock(head, head);
+	//check_deadlock(head, head);
+
 	printer_mod(head);
 	del_roll_mod(&head);
 }
@@ -534,32 +606,6 @@ void	read_and_modify(t_lst *map, char *start, char *end)
 	free(end);
 }
 
-// t_lst	*check_dupl_names(t_lst **head)
-// {
-// 	t_lst *tmp_prev;
-// 	t_lst *h;
-//
-// 	h = *head;
-// 	if (!(*head))
-// 		return (NULL);
-// 	while ((*head))
-// 	{
-// 		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
-// 		((*head)->name1, (*head)->name2))
-// 		{
-// 			tmp_prev->next = (*head)->next;
-// 			del_list(head);
-// 			(*head) = tmp_prev->next;
-// 		}
-// 		else
-// 		{
-// 			tmp_prev = (*head);
-// 			(*head) = (*head)->next;
-// 		}
-// 	}
-// 	return (h);
-// }
-
 void	check_dupl_start(t_lst *head)
 {
 	char *tmp;
@@ -571,9 +617,10 @@ void	check_dupl_start(t_lst *head)
 			break ;
 		head = head->next;
 	}
-	tmp = ft_strdup(head->next->line);
+	if (head->next)
+		tmp = ft_strdup(head->next->line);
 	head = head->next;
-	while (head->next)
+	while (head && head->next)
 	{
 		if (head->isstart && ft_strcmp(head->next->line, tmp))
 			head->isstart = 0;
@@ -593,9 +640,10 @@ void	check_dupl_end(t_lst *head)
 			break ;
 		head = head->next;
 	}
-	tmp = ft_strdup(head->next->line);
+	if (head->next)
+		tmp = ft_strdup(head->next->line);
 	head = head->next;
-	while (head->next)
+	while (head && head->next)
 	{
 		if (head->isend && ft_strcmp(head->next->line, tmp))
 			head->isend = 0;
@@ -606,22 +654,29 @@ void	check_dupl_end(t_lst *head)
 
 void	lemin(t_lst **head)
 {
+
 	check_xy(*head);
+
 	split_name_xy(*head);
+
 	check_dupl_xy(*head, *head);
+
 	check_commands(*head);
+
 	check_dupl_start(*head);
+
 	check_dupl_end(*head);
+
 	*head = split_names(head);
 	check_new_names(*head, *head);
-	printer_valid(*head);
+	//printer_valid(*head);
 	if (checker(*head))
 		read_and_modify(*head, NULL, NULL); //----- Модификация
 	else
 		ft_putendl("ERROR");
 }
 
-int		main(void) 	//-----------------------------Валидация
+int		main(void) 	//-------------------------------Валидация
 {
 	t_lst	*head;
 	char	*arr;
