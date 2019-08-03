@@ -86,7 +86,7 @@ int		not_comment(char *s)
 		return (FALSE);
 	if (s[0] == '#' && s[1] == '#')
 	{
-	 	if (!ft_strcmp(s, "##start") || !ft_strcmp(s, "##end"))
+		if (!ft_strcmp(s, "##start") || !ft_strcmp(s, "##end"))
 			return (TRUE);
 		else
 			return (FALSE);
@@ -107,7 +107,7 @@ int		check_realnum_add(char *s, int n, int len)
 	if (len < 10)
 		return (TRUE);
 	if (len == 10 && ft_strcmp(s, "2147483647") <= 0)
-			return (TRUE);
+		return (TRUE);
 	return (FALSE);
 }
 
@@ -201,7 +201,7 @@ void	del_split(char **s)
 	free(s);
 }
 
-int 		num_c(char *s, int ch)
+int		num_c(char *s, int ch)
 {
 	int i;
 	int count;
@@ -219,8 +219,8 @@ int 		num_c(char *s, int ch)
 
 void	check_edge(t_lst *head)
 {
-	t_lst *tmp;
-	char **av;
+	t_lst	*tmp;
+	char	**av;
 
 	if (!head)
 		return ;
@@ -246,8 +246,8 @@ void	check_edge(t_lst *head)
 
 void	check_xy(t_lst *head)
 {
-	t_lst *tmp;
-	char **av;
+	t_lst	*tmp;
+	char	**av;
 
 	if (!head)
 		return ;
@@ -264,7 +264,7 @@ void	check_xy(t_lst *head)
 				tmp->isxy = 1;
 		}
 		else
-			break;
+			break ;
 		del_split(av);
 		tmp = tmp->next;
 	}
@@ -291,8 +291,8 @@ void	check_commands(t_lst *head)
 
 void	split_name_xy(t_lst *head)
 {
-	t_lst *tmp;
-	char **av;
+	t_lst	*tmp;
+	char	**av;
 
 	tmp = head;
 	if (!head)
@@ -338,8 +338,8 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 
 t_lst	*split_names(t_lst **head)
 {
-	t_lst *tmp;
-	char **av;
+	t_lst	*tmp;
+	char	**av;
 
 	tmp = *head;
 	if (!head)
@@ -354,8 +354,8 @@ t_lst	*split_names(t_lst **head)
 			tmp->name2 = ft_strcmp(av[0], av[1]) < 0 ?
 			ft_strdup(av[1]) : ft_strdup(av[0]);
 			free(tmp->line);
-			tmp->line = ft_strjoin_free
-			(ft_strjoin(tmp->name1, "-"), tmp->name2, 1, 0);
+			tmp->line = ft_strjoin_free(ft_strjoin(tmp->name1, "-"),
+			tmp->name2, 1, 0);
 			del_split(av);
 		}
 		tmp = tmp->next;
@@ -375,8 +375,8 @@ void	del_list_valid(t_lst **del)
 
 void	check_new_names(t_lst *a, t_lst *b)
 {
-	t_lst *tmp;
-	int flag;
+	t_lst	*tmp;
+	int		flag;
 
 	flag = 0;
 	tmp = b;
@@ -386,8 +386,8 @@ void	check_new_names(t_lst *a, t_lst *b)
 	{
 		while (b->next)
 		{
-			if (b->name && a->name1 && a->name2 && (!ft_strcmp
-				(b->name, a->name1) || !ft_strcmp(b->name, a->name2)))
+			if (b->name && a->name1 && a->name2
+			&& (!ft_strcmp(b->name, a->name1) || !ft_strcmp(b->name, a->name2)))
 				flag = 1;
 			b = b->next;
 		}
@@ -402,9 +402,9 @@ void	check_new_names(t_lst *a, t_lst *b)
 
 int		checker(t_lst *head)
 {
-	t_lst *t;
-	int start;
-	int end;
+	t_lst	*t;
+	int		start;
+	int		end;
 
 	start = 0;
 	end = 0;
@@ -490,7 +490,7 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 	while (map)
 	{
 		if (map->isedge)
-			break;
+			break ;
 		map = map->next;
 	}
 	if (!map)
@@ -510,8 +510,8 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 
 void	read_and_modify(t_lst *map, char *start, char *end)
 {
-	t_lst *h;
-	int ants;
+	t_lst	*h;
+	int		ants;
 
 	h = map;
 	while (map)
@@ -560,7 +560,7 @@ void	read_and_modify(t_lst *map, char *start, char *end)
 // 	return (h);
 // }
 
-void 	check_dupl_start(t_lst *head)
+void	check_dupl_start(t_lst *head)
 {
 	char *tmp;
 
@@ -568,7 +568,7 @@ void 	check_dupl_start(t_lst *head)
 	while (head->next)
 	{
 		if (head->isstart)
-			break;
+			break ;
 		head = head->next;
 	}
 	tmp = ft_strdup(head->next->line);
@@ -582,7 +582,7 @@ void 	check_dupl_start(t_lst *head)
 	ft_memdel((void**)(&tmp));
 }
 
-void 	check_dupl_end(t_lst *head)
+void	check_dupl_end(t_lst *head)
 {
 	char *tmp;
 
@@ -590,7 +590,7 @@ void 	check_dupl_end(t_lst *head)
 	while (head->next)
 	{
 		if (head->isend)
-			break;
+			break ;
 		head = head->next;
 	}
 	tmp = ft_strdup(head->next->line);
@@ -604,7 +604,7 @@ void 	check_dupl_end(t_lst *head)
 	ft_memdel((void**)(&tmp));
 }
 
-void 	lemin(t_lst **head)
+void	lemin(t_lst **head)
 {
 	check_xy(*head);
 	split_name_xy(*head);
@@ -623,8 +623,8 @@ void 	lemin(t_lst **head)
 
 int		main(void) 	//-----------------------------Валидация
 {
-	t_lst *head;
-	char *arr;
+	t_lst	*head;
+	char	*arr;
 
 	head = NULL;
 	arr = NULL;
