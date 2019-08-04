@@ -483,73 +483,88 @@ void	del_roll_mod(t_l **head)
 	}
 }
 
-void	check_deadlock(t_l *a, t_l *b)
+int		check_deadlock_add(t_l *a, t_l *b)
 {
-	t_l		*tmp;
 	int		flag1;
 	int		flag2;
 
 	flag1 = 0;
 	flag2 = 0;
-	tmp = b;
-	if (!a || !b)
-		return ;
-	while (a)
+	while (b)
 	{
-		while (b)
+
+		if (a != b && a->ants > 0 && b->ants > 0)
 		{
-			if (a != b && a->ants > 0 && b->ants > 0)
-			{
-				if (!ft_strcmp(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2))
-				{
-					flag1 = 1;
-					//printf("%s\n", "-");
-				}
-				if (!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2))
-				{
-					flag2 = 1;
-					//printf("%s\n", "--");
-				}
-			}
-			b = b->next;
+			if ((!ft_strcmp(a->name1, b->name1)
+			|| !ft_strcmp(a->name1, b->name2)))// && ft_strcmp(a->name1, a->start) && ft_strcmp(a->name1, a->end))
+				flag1 = 1;
+			if ((!ft_strcmp(a->name2, b->name1)
+			|| !ft_strcmp(a->name2, b->name2)))// && ft_strcmp(a->name2, a->start) && ft_strcmp(a->name2, a->end))
+				flag2 = 1;
 		}
-		if (flag1 + flag2 != 2)
-		{
-			printf("%d\n", flag1 + flag2);
-			a->ants = 0;
-		}
-		flag1 = 0;
-		flag2 = 0;
-		b = tmp;
-		a = a->next;
+		b = b->next;
 	}
+	return (flag1 + flag2);
 }
 
-// t_lst	*check_dupl_names(t_lst **head)
-// {
-// 	t_lst *tmp_prev;
-// 	t_lst *h;
-//
-// 	h = *head;
-// 	if (!(*head))
-// 		return (NULL);
-// 	while ((*head))
-// 	{
-// 		if ((*head)->name1 && (*head)->name2 && !ft_strcmp
-// 		((*head)->name1, (*head)->name2))
-// 		{
-// 			tmp_prev->next = (*head)->next;
-// 			del_list(head);
-// 			(*head) = tmp_prev->next;
-// 		}
-// 		else
-// 		{
-// 			tmp_prev = (*head);
-// 			(*head) = (*head)->next;
-// 		}
-// 	}
-// 	return (h);
-// }
+int		check_deadlock(t_l *a, t_l *b)
+{
+	t_l		*tmp;
+	int 	flag;
+
+	flag = 0;
+	if (!a || !b)
+		return (FALSE);
+	while (a)
+	{
+		// if (ft_strcmp(a->start, a->name1) && ft_strcmp(a->start, a->name2)
+		// && ft_strcmp(a->end, a->name1) && ft_strcmp(a->end, a->name2))
+			if (check_deadlock_add(a, b) != 2)
+			{
+				a->ants = 0;
+				flag = 1;
+			}
+		a = a->next;
+	}
+	if (flag == 0)
+		return (FALSE);
+	return (TRUE);
+}
+
+t_l	*del_deadlock(t_l **head)
+{
+	t_l *tmp_prev;
+	t_l *h;
+
+	while ((*head) && (*head)->ants == 0)
+		(*head) = (*head)->next;
+	h = *head;
+	if (!(*head))
+		return (NULL);
+
+	while ((*head))
+	{
+
+		if ((*head)->ants == 0)
+		{
+			printf("%s\n", (*head)->line);
+			if ((*head)->next)
+			{
+				tmp_prev->next = (*head)->next;
+				del_list_mod(head);
+			}
+			else
+				return (h);
+			(*head) = tmp_prev->next;
+		}
+		else
+		{
+			tmp_prev = (*head);
+			(*head) = (*head)->next;
+		}
+	}
+	return (h);
+}
 
 void	modify(int ants, char *start, char *end, t_lst *map)
 {
@@ -573,8 +588,12 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 			head = creator_mod(head, map);
 		map = map->next;
 	}
-	check_deadlock(head, head);
-	//check_deadlock(head, head);
+
+ 	while (check_deadlock(head, head))
+	{
+		head = del_deadlock(&head);
+		printf("%s\n", "--");
+	}
 
 	printer_mod(head);
 	del_roll_mod(&head);
@@ -592,12 +611,12 @@ void	read_and_modify(t_lst *map, char *start, char *end)
 		if (map->isstart)
 		{
 			free(start);
-			start = ft_strdup(map->line);
+			start = ft_strdup(map->next->name);
 		}
 		if (map->isend)
 		{
 			free(end);
-			end = ft_strdup(map->line);
+			end = ft_strdup(map->next->name);
 		}
 		map = map->next;
 	}
