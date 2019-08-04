@@ -326,10 +326,6 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 				if (((ft_strcmp(a->name, b->name) && !ft_strcmp(a->x_y, b->x_y))
 				|| (!ft_strcmp(a->name, b->name) && ft_strcmp(a->x_y, b->x_y))))
 					a->isxy = 0;
-			// if ((a->name && b->name && ft_strcmp(a->name, b->name)
-			// && a->x_y && b->x_y && !ft_strcmp(a->x_y, b->x_y) && a != b)
-			// || (a->name && b->name && !ft_strcmp(a->name, b->name)
-			// && a->x_y && b->x_y && ft_strcmp(a->x_y, b->x_y) && a != b))
 			b = b->next;
 		}
 		b = tmp;
@@ -492,14 +488,13 @@ int		check_deadlock_add(t_l *a, t_l *b)
 	flag2 = 0;
 	while (b)
 	{
-
 		if (a != b && a->ants > 0 && b->ants > 0)
 		{
-			if ((!ft_strcmp(a->name1, b->name1)
-			|| !ft_strcmp(a->name1, b->name2)))// && ft_strcmp(a->name1, a->start) && ft_strcmp(a->name1, a->end))
+			if (!ft_strcmp(a->name1, b->name1)
+			|| !ft_strcmp(a->name1, b->name2))
 				flag1 = 1;
-			if ((!ft_strcmp(a->name2, b->name1)
-			|| !ft_strcmp(a->name2, b->name2)))// && ft_strcmp(a->name2, a->start) && ft_strcmp(a->name2, a->end))
+			if (!ft_strcmp(a->name2, b->name1)
+			|| !ft_strcmp(a->name2, b->name2))
 				flag2 = 1;
 		}
 		b = b->next;
@@ -517,8 +512,8 @@ int		check_deadlock(t_l *a, t_l *b)
 		return (FALSE);
 	while (a)
 	{
-		// if (ft_strcmp(a->start, a->name1) && ft_strcmp(a->start, a->name2)
-		// && ft_strcmp(a->end, a->name1) && ft_strcmp(a->end, a->name2))
+		if (ft_strcmp(a->start, a->name1) && ft_strcmp(a->start, a->name2)
+		&& ft_strcmp(a->end, a->name1) && ft_strcmp(a->end, a->name2))
 			if (check_deadlock_add(a, b) != 2)
 			{
 				a->ants = 0;
@@ -531,23 +526,27 @@ int		check_deadlock(t_l *a, t_l *b)
 	return (TRUE);
 }
 
+t_l		*scrolling_mod(t_l *map)
+{
+	if (!map)
+		return (NULL);
+	while (map && map->ants == 0)
+	{
+		map = map->next;
+	}
+	return (map);
+}
+
 t_l	*del_deadlock(t_l **head)
 {
 	t_l *tmp_prev;
 	t_l *h;
 
-	while ((*head) && (*head)->ants == 0)
-		(*head) = (*head)->next;
-	h = *head;
-	if (!(*head))
-		return (NULL);
-
+	h = scrolling_mod(*head);
 	while ((*head))
 	{
-
 		if ((*head)->ants == 0)
 		{
-			printf("%s\n", (*head)->line);
 			if ((*head)->next)
 			{
 				tmp_prev->next = (*head)->next;
@@ -566,36 +565,133 @@ t_l	*del_deadlock(t_l **head)
 	return (h);
 }
 
-void	modify(int ants, char *start, char *end, t_lst *map)
+t_lst	*scrolling_valid(t_lst *map)
 {
-	t_l *head;
-
-	head = NULL;
+	if (!map)
+		return (NULL);
 	while (map)
 	{
 		if (map->isedge)
 			break ;
 		map = map->next;
 	}
-	if (!map)
+	return (map);
+}
+
+int		check_deadlock_start_end_add(t_l *a, t_l *b)
+{
+	int		flag1;
+	int		flag2;
+
+	flag1 = 0;
+	flag2 = 0;
+	while (b)
+	{
+		if (a != b && a->ants > 0 && b->ants > 0
+		&& (!ft_strcmp(a->name1, a->start) || !ft_strcmp(a->name1, a->end)))
+		{
+			if (!ft_strcmp(a->name2, b->name1)
+			|| !ft_strcmp(a->name2, b->name2))
+				flag1 = 1;
+		}
+		if (a != b && a->ants > 0 && b->ants > 0
+		&& (!ft_strcmp(a->name2, a->start) || !ft_strcmp(a->name2, a->end)))
+		{
+			if (!ft_strcmp(a->name1, b->name1)
+			|| !ft_strcmp(a->name1, b->name2))
+				flag2 = 1;
+		}
+		b = b->next;
+	}
+	return (flag1 + flag2);
+}
+
+int		check_deadlock_start_end(t_l *a, t_l *b)
+{
+	t_l		*tmp;
+	int		flag;
+
+	flag = 0;
+	if (!a || !b)
+		return (FALSE);
+	while (a)
+	{
+		if (!ft_strcmp(a->start, a->name1) || !ft_strcmp(a->start, a->name2)
+		|| !ft_strcmp(a->end, a->name1) || !ft_strcmp(a->end, a->name2))
+		{
+			if (check_deadlock_start_end_add(a, b) != 1)
+			{
+				a->ants = 0;
+				flag = 1;
+			}
+		}
+		a = a->next;
+	}
+	if (flag == 0)
+		return (FALSE);
+	return (TRUE);
+}
+
+int		simple_solve(t_l *h)
+{
+	while (h)
+	{
+		if (((!ft_strcmp(h->name2, h->start) || !ft_strcmp(h->name2, h->end))
+		&& (!ft_strcmp(h->name1, h->start) || !ft_strcmp(h->name1, h->end))))
+			return (TRUE);
+		h = h->next;
+	}
+	return (FALSE);
+}
+
+void 	print_simple_solve(t_l *h)
+{
+	int i;
+
+	i = 1;
+	while (i <= h->ants)
+	{
+		ft_putchar('L');
+		ft_putstr(ft_itoa(i));
+		ft_putchar('-');
+		ft_putstr(h->end);
+		if (i != h->ants)
+			ft_putchar(' ');
+		i++;
+	}
+	ft_putchar('\n');
+}
+
+void 	killer(t_l *head)
+{
+	while (check_deadlock(head, head))
+		head = del_deadlock(&head);
+	if (check_deadlock_start_end(head, head))
+		head = del_deadlock(&head);
+	printer_mod(head);
+}
+
+void	modify(int ants, char *start, char *end, t_lst *map)
+{
+	t_l *head;
+
+	if (!(map = scrolling_valid(map)))
 		return ;
 	head = create_list_mod(ants, start, end, map);
 	if (map->next)
-		map = map->next;
-	while (map)
 	{
-		if (map->name1 && map->name2 && ft_strcmp(map->name1, map->name2))
-			head = creator_mod(head, map);
 		map = map->next;
+		while (map)
+		{
+			if (map->name1 && map->name2 && ft_strcmp(map->name1, map->name2))
+				head = creator_mod(head, map);
+			map = map->next;
+		}
 	}
-
- 	while (check_deadlock(head, head))
-	{
-		head = del_deadlock(&head);
-		printf("%s\n", "--");
-	}
-
-	printer_mod(head);
+	if (simple_solve(head))
+		print_simple_solve(head);
+	else
+		killer(head);
 	del_roll_mod(&head);
 }
 
@@ -673,19 +769,12 @@ void	check_dupl_end(t_lst *head)
 
 void	lemin(t_lst **head)
 {
-
 	check_xy(*head);
-
 	split_name_xy(*head);
-
 	check_dupl_xy(*head, *head);
-
 	check_commands(*head);
-
 	check_dupl_start(*head);
-
 	check_dupl_end(*head);
-
 	*head = split_names(head);
 	check_new_names(*head, *head);
 	//printer_valid(*head);
