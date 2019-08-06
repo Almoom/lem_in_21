@@ -40,6 +40,7 @@ typedef struct		s_l
 	char			*line;
 	char			*name1;
 	char			*name2;
+	int				loc;
 	int				ants;
 	char			*start;
 	char			*end;

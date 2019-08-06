@@ -53,6 +53,7 @@ void	printer_mod(t_l *head)
 		printf("%s\t", tmp->line);
 		printf("%s\t", tmp->name1);
 		printf("%s\t", tmp->name2);
+		printf(">%d\t", tmp->loc);
 		printf("%d\t", tmp->ants);
 		printf("%s\t", tmp->start);
 		printf("%s\n", tmp->end);
@@ -432,6 +433,7 @@ t_l		*create_list_mod(int ants, char *start, char *end, t_lst *map)
 	list->line = ft_strdup(map->line);
 	list->name1 = ft_strdup(map->name1);
 	list->name2 = ft_strdup(map->name2);
+	list->loc = 0;
 	list->ants = ants;
 	list->start = ft_strdup(start);
 	list->end = ft_strdup(end);
@@ -545,16 +547,17 @@ t_l	*del_deadlock(t_l **head)
 	h = scrolling_mod(*head);
 	while ((*head))
 	{
-		if ((*head)->ants == 0)
+		if ((*head)->ants == 0 && (*head)->next)
 		{
-			if ((*head)->next)
-			{
-				tmp_prev->next = (*head)->next;
-				del_list_mod(head);
-			}
-			else
-				return (h);
+			tmp_prev->next = (*head)->next;
+			del_list_mod(head);
 			(*head) = tmp_prev->next;
+		}
+		else if ((*head)->ants == 0 && !((*head)->next))
+		{
+			tmp_prev->next = NULL;
+			del_list_mod(head);
+			return (h);
 		}
 		else
 		{
@@ -644,7 +647,7 @@ int		simple_solve(t_l *h)
 	return (FALSE);
 }
 
-void 	print_simple_solve(t_l *h)
+void	print_simple_solve(t_l *h)
 {
 	int i;
 
@@ -662,13 +665,85 @@ void 	print_simple_solve(t_l *h)
 	ft_putchar('\n');
 }
 
-void 	killer(t_l *head)
+void 	start_forward_list(t_l **head)
 {
-	while (check_deadlock(head, head))
-		head = del_deadlock(&head);
-	if (check_deadlock_start_end(head, head))
-		head = del_deadlock(&head);
-	printer_mod(head);
+	t_l *tmp_prev;
+	t_l *oldh;
+	t_l *tmp;
+
+	oldh = *head;
+	while ((*head))
+	{
+		if (!ft_strcmp((*head)->start, (*head)->name1)
+		|| !ft_strcmp((*head)->start, (*head)->name2))
+		{
+
+			tmp_prev->next = NULL;
+			tmp = *head;
+			(*head)->loc = 1;
+			break ;
+		}
+		else
+		{
+			tmp_prev = (*head);
+			(*head) = (*head)->next;
+		}
+	}
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = oldh;
+}
+
+int		check_unlocal_add(t_l *tmp)
+{
+	int flag;
+
+	flag = 0;
+	while (tmp)
+	{
+		if (tmp->loc != 1)
+		{
+			tmp->ants = 0;
+			flag = 1;
+		}
+		tmp = tmp->next;
+	}
+	return (flag);
+}
+
+int		check_unlocal(t_l *a, t_l *b)
+{
+	t_l		*tmp;
+
+	tmp = b;
+	if (!a || !b)
+		return (FALSE);
+	while (a)
+	{
+		while (b)
+		{
+			if (a != b && b->loc != 1 && a->loc == 1 && (!ft_strcmp
+			(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2) ||
+			!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2)))
+				b->loc = 1;
+			b = b->next;
+		}
+		b = tmp;
+		a = a->next;
+	}
+	return (check_unlocal_add(tmp));
+}
+
+void	killer(t_l **head)
+{
+	while (check_deadlock(*head, *head))
+		*head = del_deadlock(head);
+	if (check_deadlock_start_end(*head, *head))
+		*head = del_deadlock(head);
+	start_forward_list(head);
+	if (check_unlocal(*head, *head))
+		*head = del_deadlock(head);
+	printer_mod(*head);
 }
 
 void	modify(int ants, char *start, char *end, t_lst *map)
@@ -691,7 +766,7 @@ void	modify(int ants, char *start, char *end, t_lst *map)
 	if (simple_solve(head))
 		print_simple_solve(head);
 	else
-		killer(head);
+		killer(&head);
 	del_roll_mod(&head);
 }
 
