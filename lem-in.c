@@ -52,7 +52,10 @@ void	printer_mod(t_l *head)
 	{
 		printf("%s\t", tmp->line);
 		printf("%s\t", tmp->name1);
+		printf(":%d\t", tmp->c1);
 		printf("%s\t", tmp->name2);
+		printf(":%d\t", tmp->c2);
+		printf("%d>\t", tmp->grey);
 		printf(">%d\t", tmp->loc);
 		printf("%d\t", tmp->ants);
 		printf("%s\t", tmp->start);
@@ -433,6 +436,9 @@ t_l		*create_list_mod(int ants, char *start, char *end, t_lst *map)
 	list->line = ft_strdup(map->line);
 	list->name1 = ft_strdup(map->name1);
 	list->name2 = ft_strdup(map->name2);
+	list->c1 = 0;
+	list->c2 = 0;
+	list->grey = 0;
 	list->loc = 0;
 	list->ants = ants;
 	list->start = ft_strdup(start);
@@ -734,6 +740,98 @@ int		check_unlocal(t_l *a, t_l *b)
 	return (check_unlocal_add(tmp));
 }
 
+void	vertex_start_end(t_l *a)
+{
+	a->c1 = !ft_strcmp(a->name1, a->end) ? END : a->c1;
+	a->c2 = !ft_strcmp(a->name2, a->end) ? END : a->c2;
+	a->c1 = !ft_strcmp(a->name1, a->start) ? START : a->c1;
+	a->c2 = !ft_strcmp(a->name2, a->start) ? START : a->c2;
+}
+
+void	cost_vertex(t_l *a, t_l *b, int count1, int count2)
+{
+	t_l		*tmp;
+
+	tmp = b;
+	if (!a || !b)
+		return ;
+	while (a)
+	{
+		count1 = 0;
+		count2 = 0;
+		while (b)
+		{
+			count1 = (!ft_strcmp(a->name1, b->name1) || !ft_strcmp
+			(a->name1, b->name2)) ? count1 + 1 : count1;
+			count2 = (!ft_strcmp(a->name2, b->name1) || !ft_strcmp
+			(a->name2, b->name2)) ? count2 + 1 : count2;
+			b = b->next;
+		}
+		b = tmp;
+		a->c1 = count1;
+		a->c2 = count2;
+		if (!ft_strcmp(a->name1, a->end) || !ft_strcmp(a->name2, a->end)
+		|| !ft_strcmp(a->name1, a->start) || !ft_strcmp(a->name2, a->start))
+			vertex_start_end(a);
+		a = a->next;
+	}
+}
+
+int		find_cheap_edge(t_l *h, char *name)
+{
+	int min;
+
+	min = h->c1 + h->c2;
+	while (h)
+	{
+		if ((!ft_strcmp(h->name1, name) || !ft_strcmp(h->name2, name))
+		&& h->grey != 1)
+			min = min > h->c1 + h->c2 ? h->c1 + h->c2 : min;
+		h = h->next;
+	}
+	return (min);
+}
+
+int		finder(t_l *h, t_l *t, char *from)
+{
+	int cost;
+
+	cost = find_cheap_edge(h, from);
+	if (!t)
+		finder(h, h, from);
+	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
+	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
+	{
+		printf("%s-%s\n", t->name1, t->name2);
+		t->grey = 1;
+		return (0);
+	}
+	else if (!ft_strcmp(t->name1, from) && cost == t->c1 + t->c2 && !t->grey)
+	{
+		printf("%s-%s\n", t->name1, t->name2);
+		t->grey = 1;
+		return (finder(h, t->next, t->name2));
+	}
+	else if (!ft_strcmp(t->name2, from) && cost == t->c1 + t->c2 && !t->grey)
+	{
+		printf("%s-%s\n", t->name1, t->name2);
+		t->grey = 1;
+		return (finder(h, t->next, t->name1));
+	}
+	else
+		return (finder(h, t->next, from));
+	return (0);
+}
+
+void 	separator(t_l **head)
+{
+	cost_vertex(*head, *head, 0, 0);
+	if ((*head)->c1 > (*head)->c2)
+		finder((*head), (*head), (*head)->name1);
+	else
+		finder((*head), (*head), (*head)->name2);
+}
+
 void	killer(t_l **head)
 {
 	while (check_deadlock(*head, *head))
@@ -743,6 +841,7 @@ void	killer(t_l **head)
 	start_forward_list(head);
 	if (check_unlocal(*head, *head))
 		*head = del_deadlock(head);
+	separator(head);
 	printer_mod(*head);
 }
 

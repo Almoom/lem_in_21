@@ -18,6 +18,8 @@
 # include "libft/libft.h"
 # define TRUE 1
 # define FALSE 0
+# define END -1000
+# define START 1000
 
 typedef struct		s_lst
 {
@@ -40,6 +42,9 @@ typedef struct		s_l
 	char			*line;
 	char			*name1;
 	char			*name2;
+	int				c1;
+	int				c2;
+	int				grey;
 	int				loc;
 	int				ants;
 	char			*start;
