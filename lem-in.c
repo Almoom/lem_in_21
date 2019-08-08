@@ -51,6 +51,7 @@ void	printer_mod(t_l *head)
 	while (tmp)
 	{
 		printf("%s\t", tmp->line);
+		printf("w:%d\t", tmp->weight);
 		printf("%s\t", tmp->name1);
 		printf(":%d\t", tmp->c1);
 		printf("%s\t", tmp->name2);
@@ -434,6 +435,7 @@ t_l		*create_list_mod(int ants, char *start, char *end, t_lst *map)
 	if (!(list = (t_l*)malloc(sizeof(*list))))
 		return (NULL);
 	list->line = ft_strdup(map->line);
+	list->weight = 1;
 	list->name1 = ft_strdup(map->name1);
 	list->name2 = ft_strdup(map->name2);
 	list->c1 = 0;
@@ -748,33 +750,134 @@ void	vertex_start_end(t_l *a)
 	a->c2 = !ft_strcmp(a->name2, a->start) ? START : a->c2;
 }
 
-void	cost_vertex(t_l *a, t_l *b, int count1, int count2)
+int		cost_vertex_add(t_l *a, t_l *b)
 {
-	t_l		*tmp;
+	int count1;
+	int count2;
 
-	tmp = b;
+	count1 = 0;
+	count2 = 0;
 	if (!a || !b)
-		return ;
+		return (FALSE);
+	while (b)
+	{
+		count1 = (!ft_strcmp(a->name1, b->name1) || !ft_strcmp
+		(a->name1, b->name2)) ? count1 + 1 : count1;
+		count2 = (!ft_strcmp(a->name2, b->name1) || !ft_strcmp
+		(a->name2, b->name2)) ? count2 + 1 : count2;
+		b = b->next;
+	}
+	a->c1 = count1;
+	a->c2 = count2;
+	if (count1 == 2 || count2 == 2)
+		return (TRUE);
+	return (FALSE);
+}
+
+void	devourer_add(t_l *a, t_l *b, int flag)
+{
+	while (b)
+	{
+		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name1))
+		{
+			free(b->name1);
+			b->name1 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
+			b->weight += a->weight;
+			b->line = ft_strjoin_free(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
+			break ;
+		}
+		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name2))
+		{
+			free(b->name2);
+			b->name1 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
+			b->weight += a->weight;
+			b->line = ft_strjoin_free(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
+			break ;
+		}
+		b = b->next;
+	}
+}
+
+void	devourer(t_l *h)
+{
+	char *del;
+	char *save1;
+	char *delline;
+	int weight;
+
+	while (h)
+	{
+		if (h->c1 == 2)
+		{
+			h->ants = 0;
+			h = h->next;
+			devourer_add(h, h, 1);
+			// save1 = h->name2;
+			// del = h->name1;
+			// weight = h->weight;
+			// delline = h->line;
+
+			break ;
+		}
+		if (h->c2 == 2)
+		{
+			h->ants = 0;
+			h = h->next;
+			devourer_add(h, h, 2);
+			// save1 = h->name1;
+			// del = h->name2;
+			// weight = h->weight;
+			// delline = h->line;
+
+			break ;
+		}
+		h = h->next;
+	}
+	while (h)
+	{
+		if (!ft_strcmp(del, h->name1))
+		{
+			free(h->name1);
+			h->name1 = ft_strdup(save1);
+			h->weight += weight;
+			h->line = ft_strjoin_free(ft_strjoin_free(h->line, "\n", 1, 0), delline, 1, 0);
+			break ;
+		}
+		if (!ft_strcmp(del, h->name2))
+		{
+			free(h->name2);
+			h->name2 = ft_strdup(save1);
+			h->weight += weight;
+			h->line = ft_strjoin_free(ft_strjoin_free(h->line, "\n", 1, 0), delline, 1, 0);
+			break ;
+		}
+		h = h->next;
+	}
+	//printf("%s\n", del);
+}
+
+int		cost_vertex(t_l *a, t_l *b)
+{
+	int flag;
+
+	flag = 0;
+	if (!a || !b)
+		return (FALSE);
 	while (a)
 	{
-		count1 = 0;
-		count2 = 0;
-		while (b)
-		{
-			count1 = (!ft_strcmp(a->name1, b->name1) || !ft_strcmp
-			(a->name1, b->name2)) ? count1 + 1 : count1;
-			count2 = (!ft_strcmp(a->name2, b->name1) || !ft_strcmp
-			(a->name2, b->name2)) ? count2 + 1 : count2;
-			b = b->next;
-		}
-		b = tmp;
-		a->c1 = count1;
-		a->c2 = count2;
+		if (cost_vertex_add(a, b))
+			flag = 1;
 		if (!ft_strcmp(a->name1, a->end) || !ft_strcmp(a->name2, a->end)
 		|| !ft_strcmp(a->name1, a->start) || !ft_strcmp(a->name2, a->start))
 			vertex_start_end(a);
 		a = a->next;
 	}
+	if (flag == 1)
+	{
+		devourer(b);
+		return (TRUE);
+	}
+	return (FALSE);
 }
 
 int		find_cheap_edge(t_l *h, char *name)
@@ -825,7 +928,7 @@ int		finder(t_l *h, t_l *t, char *from)
 
 void 	separator(t_l **head)
 {
-	cost_vertex(*head, *head, 0, 0);
+
 	if ((*head)->c1 > (*head)->c2)
 		finder((*head), (*head), (*head)->name1);
 	else
@@ -841,7 +944,10 @@ void	killer(t_l **head)
 	start_forward_list(head);
 	if (check_unlocal(*head, *head))
 		*head = del_deadlock(head);
-	separator(head);
+	if (cost_vertex(*head, *head))
+		;//*head = del_deadlock(head);
+
+	//separator(head);
 	printer_mod(*head);
 }
 

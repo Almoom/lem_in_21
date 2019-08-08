@@ -40,6 +40,7 @@ typedef struct		s_l
 {
 	struct s_l		*next;
 	char			*line;
+	int				weight;
 	char			*name1;
 	char			*name2;
 	int				c1;
