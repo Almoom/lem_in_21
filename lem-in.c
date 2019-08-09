@@ -537,15 +537,35 @@ int		check_deadlock(t_l *a, t_l *b)
 	return (TRUE);
 }
 
-t_l		*scrolling_mod(t_l *map)
+// t_l		*scrolling_mod(t_l *map)
+// {
+// 	if (!map)
+// 		return (NULL);
+// 	while (map && map->ants == 0)
+// 	{
+// 		map = map->next;
+// 	}
+// 	return (map);
+// }
+
+t_l		*scrolling_mod(t_l **h)
 {
-	if (!map)
-		return (NULL);
-	while (map && map->ants == 0)
+	t_l *tmp;
+
+	while ((*h))
 	{
-		map = map->next;
+		if ((*h)->ants == 0)
+		{
+			tmp = (*h)->next;
+			del_list_mod(h);
+			*h = tmp;
+		}
+		else if ((*h)->ants != 0)
+			break ;
+		else
+			*h = (*h)->next;
 	}
-	return (map);
+	return (*h);
 }
 
 t_l	*del_deadlock(t_l **head)
@@ -553,7 +573,7 @@ t_l	*del_deadlock(t_l **head)
 	t_l *tmp_prev;
 	t_l *h;
 
-	h = scrolling_mod(*head);
+	h = scrolling_mod(head);
 	while ((*head))
 	{
 		if ((*head)->ants == 0 && (*head)->next)
@@ -892,7 +912,7 @@ void	devourer(t_l *h)
 			devourer_add(h, h->next, 1);
 			break ;
 		}
-		if (h->c2 == 2)
+		else if (h->c2 == 2)
 		{
 			h->ants = 0;
 			devourer_add(h, h->next, 2);
@@ -913,6 +933,57 @@ int		check_cheap_vertex(t_l *h)
 	return (FALSE);
 }
 
+int		check_dubl_way_add(t_l *a, t_l *b)
+{
+	int		flag1;
+	int		flag2;
+
+	flag1 = 0;
+	flag2 = 0;
+	while (b)
+	{
+		if (a != b && a->ants > 0 && b->ants > 0)
+		{
+			if (!ft_strcmp(a->name1, b->name1)
+			|| !ft_strcmp(a->name1, b->name2))
+				flag1 = 1;
+			if (!ft_strcmp(a->name2, b->name1)
+			|| !ft_strcmp(a->name2, b->name2))
+				flag2 = 1;
+		}
+		b = b->next;
+	}
+	return (flag1 + flag2);
+}
+
+int		check_dubl_way(t_l *a, t_l *b)
+{
+	t_l		*tmp;
+	int 	flag;
+
+	flag = 0;
+	tmp = b;
+	if (!a || !b)
+		return (FALSE);
+	while (a)
+	{
+		while (b)
+		{
+			if (a->weight > b->weight && b->ants != 0 && a != b && (!ft_strcmp
+			(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2)) &&
+			(!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2)))
+			{
+				a->ants = 0;
+				flag = 1;
+			}
+			b = b->next;
+		}
+		b = tmp;
+		a = a->next;
+	}
+	return (flag == 0 ? FALSE : TRUE);
+}
+
 void	killer(t_l **head)
 {
 	while (check_deadlock(*head, *head))
@@ -926,15 +997,18 @@ void	killer(t_l **head)
 		(*head)->loc = 1;
 	if (check_unlocal(*head, *head))
 		*head = del_deadlock(head);
-	if (cost_vertex(*head, *head))
+	while (cost_vertex(*head, *head))
 	{
 		while (check_cheap_vertex(*head))
 		{
 			devourer(*head);
 			*head = del_deadlock(head);
 		}
+		if (check_dubl_way(*head, *head))
+			*head = del_deadlock(head);
+		else
+			break ;
 	}
-
 	//separator(head);
 	printer_mod(*head);
 }
