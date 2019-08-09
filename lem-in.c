@@ -48,6 +48,7 @@ void	printer_mod(t_l *head)
 		printf("%s\n", "(пусто)");
 		return ;
 	}
+	printf("line\tw\tname1\tc1\tname2\tc2\tgrey\tloc\tants\tstart\tend\n\n");
 	while (tmp)
 	{
 		printf("%s\t", tmp->line);
@@ -774,88 +775,6 @@ int		cost_vertex_add(t_l *a, t_l *b)
 	return (FALSE);
 }
 
-void	devourer_add(t_l *a, t_l *b, int flag)
-{
-	while (b)
-	{
-		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name1))
-		{
-			free(b->name1);
-			b->name1 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
-			b->weight += a->weight;
-			b->line = ft_strjoin_free(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
-			break ;
-		}
-		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name2))
-		{
-			free(b->name2);
-			b->name1 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
-			b->weight += a->weight;
-			b->line = ft_strjoin_free(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
-			break ;
-		}
-		b = b->next;
-	}
-}
-
-void	devourer(t_l *h)
-{
-	char *del;
-	char *save1;
-	char *delline;
-	int weight;
-
-	while (h)
-	{
-		if (h->c1 == 2)
-		{
-			h->ants = 0;
-			h = h->next;
-			devourer_add(h, h, 1);
-			// save1 = h->name2;
-			// del = h->name1;
-			// weight = h->weight;
-			// delline = h->line;
-
-			break ;
-		}
-		if (h->c2 == 2)
-		{
-			h->ants = 0;
-			h = h->next;
-			devourer_add(h, h, 2);
-			// save1 = h->name1;
-			// del = h->name2;
-			// weight = h->weight;
-			// delline = h->line;
-
-			break ;
-		}
-		h = h->next;
-	}
-	while (h)
-	{
-		if (!ft_strcmp(del, h->name1))
-		{
-			free(h->name1);
-			h->name1 = ft_strdup(save1);
-			h->weight += weight;
-			h->line = ft_strjoin_free(ft_strjoin_free(h->line, "\n", 1, 0), delline, 1, 0);
-			break ;
-		}
-		if (!ft_strcmp(del, h->name2))
-		{
-			free(h->name2);
-			h->name2 = ft_strdup(save1);
-			h->weight += weight;
-			h->line = ft_strjoin_free(ft_strjoin_free(h->line, "\n", 1, 0), delline, 1, 0);
-			break ;
-		}
-		h = h->next;
-	}
-	//printf("%s\n", del);
-}
-
 int		cost_vertex(t_l *a, t_l *b)
 {
 	int flag;
@@ -874,7 +793,7 @@ int		cost_vertex(t_l *a, t_l *b)
 	}
 	if (flag == 1)
 	{
-		devourer(b);
+
 		return (TRUE);
 	}
 	return (FALSE);
@@ -935,17 +854,86 @@ void 	separator(t_l **head)
 		finder((*head), (*head), (*head)->name2);
 }
 
+void	devourer_add(t_l *a, t_l *b, int flag)
+{
+	while (b)
+	{
+		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name1))
+		{
+			free(b->name1);
+			b->name1 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
+			b->c1 = flag == 1 ? a->c2 : a->c1;
+			b->weight += a->weight;
+			b->line = ft_strjoin_free
+			(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
+			break ;
+		}
+		if (!ft_strcmp(flag == 1 ? a->name1 : a->name2, b->name2))
+		{
+			free(b->name2);
+			b->name2 = flag == 1 ? ft_strdup(a->name2) : ft_strdup(a->name1);
+			b->c2 = flag == 1 ? a->c2 : a->c1;
+			b->weight += a->weight;
+			b->line = ft_strjoin_free
+			(ft_strjoin_free(b->line, "\n", 1, 0), a->line, 1, 0);
+			break ;
+		}
+		b = b->next;
+	}
+}
+
+void	devourer(t_l *h)
+{
+	while (h)
+	{
+		if (h->c1 == 2)
+		{
+			h->ants = 0;
+			devourer_add(h, h->next, 1);
+			break ;
+		}
+		if (h->c2 == 2)
+		{
+			h->ants = 0;
+			devourer_add(h, h->next, 2);
+			break ;
+		}
+		h = h->next;
+	}
+}
+
+int		check_cheap_vertex(t_l *h)
+{
+	while (h)
+	{
+		if (h->ants != 0 && (h->c1 == 2 || h->c2 == 2))
+			return (TRUE);
+		h = h->next;
+	}
+	return (FALSE);
+}
+
 void	killer(t_l **head)
 {
 	while (check_deadlock(*head, *head))
 		*head = del_deadlock(head);
 	if (check_deadlock_start_end(*head, *head))
 		*head = del_deadlock(head);
-	start_forward_list(head);
+	if (ft_strcmp((*head)->start, (*head)->name1)
+	&& ft_strcmp((*head)->start, (*head)->name2))
+		start_forward_list(head);
+	else
+		(*head)->loc = 1;
 	if (check_unlocal(*head, *head))
 		*head = del_deadlock(head);
 	if (cost_vertex(*head, *head))
-		;//*head = del_deadlock(head);
+	{
+		while (check_cheap_vertex(*head))
+		{
+			devourer(*head);
+			*head = del_deadlock(head);
+		}
+	}
 
 	//separator(head);
 	printer_mod(*head);
@@ -996,6 +984,7 @@ void	read_and_modify(t_lst *map, char *start, char *end)
 		}
 		map = map->next;
 	}
+
 	modify(ants, start, end, h);
 	free(start);
 	free(end);
