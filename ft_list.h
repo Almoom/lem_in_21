@@ -45,11 +45,11 @@ typedef struct		s_l
 	char			*name2;
 	int				c1;
 	int				c2;
-	int				grey;
 	int				loc;
 	int				ants;
 	char			*start;
 	char			*end;
 }					t_l;
 void				del_list_valid(t_lst **del);
+void				killer(t_l **head);
 #endif
