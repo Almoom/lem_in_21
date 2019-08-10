@@ -50,6 +50,28 @@ typedef struct		s_l
 	char			*start;
 	char			*end;
 }					t_l;
+
+typedef struct		s_const
+{
+	int				ants;
+	char			*start;
+	char			*end;
+}					t_const;
+
+typedef struct		s_way
+{
+	struct s_way	*next;
+	char			*line;
+	int				weight;
+	char			*name1;
+	char			*name2;
+	int				c1;
+	int				c2;
+	int				loc;
+	int				ants;
+	char			*start;
+	char			*end;
+}					t_way;
 void				del_list_valid(t_lst **del);
-void				killer(t_l **head);
+void				killer(t_l **head, int count, t_l ***hub);
 #endif
