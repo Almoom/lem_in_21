@@ -829,37 +829,37 @@ int		find_cheap_edge(t_l *h, char *name)
 	return (min);
 }
 
-int		finder(t_l *h, t_l *t, char *from, int rez)
+void	joiner(t_l *t, const char **way)
+{
+	t->ants = 0;
+	*way = ft_strjoin_free(ft_strjoin_free(*way, "\n", 1, 0), t->line, 1, 0);
+}
+
+int		finder(t_l *h, t_l *t, char *from, const char **way)
 {
 	int cost;
 
 	cost = find_cheap_edge(h, from);
 	if (!t)
-		finder(h, h, from, 0);
+		finder(h, h, from, way);
 	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
 	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
 	{
-		ft_putendl(t->line); //del
-		t->ants = 0;
-		printf("%d\n", t->weight);
-		return (rez = t->weight);
+		joiner(t, way);
+		return (0);
 	}
 	else if (!ft_strcmp(t->name1, from) && cost == t->c1 + t->c2 && t->ants)
 	{
-		ft_putendl(t->line); //del
-		t->ants = 0;
-		printf("%d\n", t->weight);
-		return (rez = t->weight + finder(h, t->next, t->name2, 0));
+		joiner(t, way);
+		return (finder(h, t->next, t->name2, way));
 	}
 	else if (!ft_strcmp(t->name2, from) && cost == t->c1 + t->c2 && t->ants)
 	{
-		ft_putendl(t->line); //del
-		t->ants = 0;
-		printf("%d\n", t->weight);
-		return (rez = t->weight + finder(h, t->next, t->name1, 0));
+		joiner(t, way);
+		return (finder(h, t->next, t->name1, way));
 	}
 	else
-		return (rez = finder(h, t->next, from, 0));
+		return (finder(h, t->next, from, way));
 	return (0);
 }
 
@@ -975,15 +975,16 @@ int		check_dubl_way(t_l *a, t_l *b)
 
 void 	separator(t_l **head)
 {
-	int rez;
+	const char *way;
 
-	rez = 0;
+	way = ft_strnew(0);
 	if ((*head)->c1 > (*head)->c2)
-		rez = finder((*head), (*head), (*head)->name1, 0);
+		finder((*head), (*head), (*head)->name1, &way);
 	else
-		rez = finder((*head), (*head), (*head)->name2, 0);
+		finder((*head), (*head), (*head)->name2, &way);
 	*head = del_deadlock(head);
-	printf("----%d\n", rez);
+	printf("%s\n", way);
+	printf("----\n");
 	if ((*head))
 		killer(head);
 }
