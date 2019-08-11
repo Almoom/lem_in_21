@@ -73,5 +73,5 @@ typedef struct		s_way
 	char			*end;
 }					t_way;
 void				del_list_valid(t_lst **del);
-void				killer(t_l **head, int count, t_l **hub, t_const *list);
+void				killer(t_l **head, int count, char **hub, t_const *list);
 #endif

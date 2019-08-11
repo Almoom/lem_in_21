@@ -452,6 +452,7 @@ t_l		*create_list_mod(t_const *con, t_lst *map)
 
 	if (!(list = (t_l*)malloc(sizeof(*list))))
 		return (NULL);
+	list->next = NULL;
 	list->line = ft_strdup(map->line);
 	list->weight = 1;
 	list->name1 = ft_strdup(map->name1);
@@ -986,72 +987,7 @@ int		check_dubl_way(t_l *a, t_l *b)
 	return (flag == 0 ? FALSE : TRUE);
 }
 
-t_l		*create_list_mod_way(t_const *con, char *s)
-{
-	t_l *list;
-	char **arr;
-
-	arr = ft_strsplit(s, '-');
-	if (!(list = (t_l*)malloc(sizeof(*list))))
-		return (NULL);
-	list->line = ft_strdup(s);
-	list->weight = 1;
-	list->name1 = ft_strdup(arr[0]);
-	list->name2 = ft_strdup(arr[1]);
-	list->c1 = 0;
-	list->c2 = 0;
-	list->loc = 0;
-	list->ants = con->ants;
-	list->start = ft_strdup(con->start);
-	list->end = ft_strdup(con->end);
-	del_split(arr);
-	return (list);
-}
-
-t_l		*creator_mod_way(t_const *con, char *s, t_l *head) //<-----------ошибки
-{
-	t_l *tmp;
-
-	tmp = head;
-	while (head->next)
-	{
-		ft_putstr("---");
-		ft_putendl(head->line);
-		head = head->next;
-	}
-
-	head->next = create_list_mod_way(con, s);
-	return (tmp);
-}
-
-t_l		*split_way(char *s, t_const *list)
-{
-	t_l *head;
-	char **arr;
-	int i;
-
-	i = 0;
-	head = NULL;
-	arr = ft_strsplit(s, '\n');
-	while (arr[i])
-	{
-		//ft_putendl(arr[i]);
-		if (!head)
-		{
-			//ft_putendl("-");
-			head = create_list_mod_way(list, arr[i]);
-		}
-		else if (head)
-		{
-			//ft_putendl("--");
-			head = creator_mod_way(list, arr[i], head);
-		}
-		i++;
-	}
-	return (head);
-}
-
-void 	separator(t_l **head, int count, t_l **hub, t_const *list)
+void 	separator(t_l **head, int count, char **hub, t_const *list)
 {
 	char *way;
 
@@ -1061,18 +997,15 @@ void 	separator(t_l **head, int count, t_l **hub, t_const *list)
 	else
 		finder((*head), (*head), (*head)->name2, &way);
 	*head = del_deadlock(head);
-	ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
-	ft_putendl(way);
-
-	// if (hub[count]->line)
-	// 	count++;
-	hub[count] = split_way(way, list);
+	//ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
+	//ft_putendl(way);
+	hub[count] = ft_strdup(way);
 	free((void*)way);
 	if ((*head))
 		killer(head, count, hub, list);
 }
 
-void	killer(t_l **head, int count, t_l **hub, t_const *list)
+void	killer(t_l **head, int count, char **hub, t_const *list)
 {
 	while (check_deadlock(*head, *head))
 		*head = del_deadlock(head);
@@ -1101,45 +1034,120 @@ void	killer(t_l **head, int count, t_l **hub, t_const *list)
 		separator(head, count + 1, hub, list);
 }
 
-t_l	**malloc_zero_hub(int size)
-{
-	//int i;
-	t_l **hub;
+// t_l	**malloc_zero_hub(int size)
+// {
+// 	//int i;
+// 	t_l **hub;
+//
+// 	//i = 0;
+// 	if (!(hub = (t_l**)malloc(sizeof(*hub) * (size + 1))))
+// 		return (NULL);
+// 	// while (i < size)
+// 	// {
+// 	// 	if (!(hub[i] = (t_l*)malloc(sizeof(**hub))))
+// 	// 		return (NULL);
+// 	// 	i++;
+// 	// }
+// 	// hub[i] = 0;
+// 	return (hub);
+// }
 
-	//i = 0;
-	if (!(hub = (t_l**)malloc(sizeof(*hub) * (size + 1))))
-		return (NULL);
-	// while (i < size)
-	// {
-	// 	if (!(hub[i] = (t_l*)malloc(sizeof(**hub))))
-	// 		return (NULL);
-	// 	i++;
-	// }
-	// hub[i] = 0;
-	return (hub);
-}
-
-void 	del_hub(t_l **hub)
+void 	del_hub(char **hub)
 {
 	int i;
 
 	i = 0;
-	while ((hub[i])->line)
+	while (hub[i])
 	{
-		del_roll_mod(&hub[i]);
+		free(hub[i]);
 		i++;
 	}
-	free(hub);
+}
+
+t_l		*create_list_mod_way(t_const *con, char *s)
+{
+	t_l *list;
+	char **arr;
+
+	arr = ft_strsplit(s, '-');
+	if (!(list = (t_l*)malloc(sizeof(*list))))
+		return (NULL);
+	list->next = NULL;
+	list->line = ft_strdup(s);
+	list->weight = 1;
+	list->name1 = ft_strdup(arr[0]);
+	list->name2 = ft_strdup(arr[1]);
+	list->c1 = 0;
+	list->c2 = 0;
+	list->loc = 0;
+	list->ants = con->ants;
+	list->start = ft_strdup(con->start);
+	list->end = ft_strdup(con->end);
+	del_split(arr);
+	return (list);
+}
+
+t_l		*creator_mod_way(t_const *con, char *s, t_l *head) //<-----------ошибки
+{
+	t_l *tmp;
+
+	tmp = head;
+	while (head->next)
+	{
+		head = head->next;
+	}
+	head->next = create_list_mod_way(con, s);
+	return (tmp);
+}
+
+t_l		*split_way(char *s, t_const *list)
+{
+	t_l *head;
+	char **arr;
+	int i;
+
+	i = 0;
+	head = NULL;
+	arr = ft_strsplit(s, '\n');
+
+	while (arr[i])
+	{
+		if (!head)
+			head = create_list_mod_way(list, arr[i]);
+		else
+			head = creator_mod_way(list, arr[i], head);
+		i++;
+	}
+	del_split(arr);
+	return (head);
+}
+
+void	solution(char **s, t_const *list)
+{
+	t_l *head;
+	int i;
+
+	i = 0;
+	head = NULL;
+	while (s[i])
+	{
+		head = split_way(s[i], list);
+		/////новый список с порядком комнат
+		//printer_mod(head);
+		del_roll_mod(&head);
+		i++;
+	}
 }
 
 void	modify(t_const *list, t_lst *map)
 {
 	t_l *head;
 	int count;
-	t_l *hub[START];
+	char *hub[START];
 
-	count = -1;
 	head = NULL;
+	count = -1;
+	ft_bzero(hub, START);
 	if (!(map = scrolling_valid(map)))
 		return ;
 	while (map)
@@ -1154,8 +1162,9 @@ void	modify(t_const *list, t_lst *map)
 		print_simple_solve(head);
 	else
 		killer(&head, count, hub, list);
+	solution(hub, list);//<---------------------------расшифровка путей
+	del_hub(hub);
 	del_roll_mod(&head);
-	//del_hub(hub);
 }
 
 t_const	*create_list_const(void)
