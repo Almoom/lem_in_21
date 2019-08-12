@@ -1064,36 +1064,6 @@ void	killer(t_l **head, int count, char **hub, t_const *list)
 		separator(head, count + 1, hub, list);
 }
 
-// t_l	**malloc_zero_hub(int size)
-// {
-// 	//int i;
-// 	t_l **hub;
-//
-// 	//i = 0;
-// 	if (!(hub = (t_l**)malloc(sizeof(*hub) * (size + 1))))
-// 		return (NULL);
-// 	// while (i < size)
-// 	// {
-// 	// 	if (!(hub[i] = (t_l*)malloc(sizeof(**hub))))
-// 	// 		return (NULL);
-// 	// 	i++;
-// 	// }
-// 	// hub[i] = 0;
-// 	return (hub);
-// }
-
-void 	del_hub(char **hub)
-{
-	int i;
-
-	i = 0;
-	while (hub[i])
-	{
-		free(hub[i]);
-		i++;
-	}
-}
-
 t_l		*create_list_mod_way(t_const *con, char *s)
 {
 	t_l *list;
@@ -1139,7 +1109,6 @@ t_l		*split_way(char *s, t_const *list)
 	i = 0;
 	head = NULL;
 	arr = ft_strsplit(s, '\n');
-
 	while (arr[i])
 	{
 		if (!head)
@@ -1152,7 +1121,7 @@ t_l		*split_way(char *s, t_const *list)
 	return (head);
 }
 
-int		len_list(t_l *head)
+int		len_list_mod(t_l *head)
 {
 	int i;
 
@@ -1186,7 +1155,7 @@ t_way	*build_way_head(t_l *a, t_const *con)
 	int len;
 
 	head = NULL;
-	len = len_list(a);
+	len = len_list_mod(a);
 	while (a)
 	{
 		if (!ft_strcmp(a->start, a->name1))
@@ -1283,95 +1252,100 @@ void	del_roll_way(t_way **head)
 	}
 }
 
-char	***malloc_bzero_tab(int x, int y)
+int		len_list_way(t_way *head)
 {
-	char ***tab;
 	int i;
-	int j;
 
 	i = 0;
-	if (!(tab = (char***)malloc(sizeof(**tab) * (x + 1))))
-		return (NULL);
-	while (i < x)
+	while (head)
 	{
-		if (!(tab[i] = (char**)malloc(sizeof(*tab) * (y + 1))))
-			return (NULL);
-		j = 0;
-		while (j < y)
-		{
-			if (!(tab[i][j] = (char*)malloc(sizeof(*tab))))
-				return (NULL);
-			ft_bzero(tab[i][j], sizeof(*tab));
-			j++;
-		}
-		tab[i][j] = 0;
 		i++;
+		head = head->next;
 	}
-	tab[i] = 0;
-	return (tab);
+	return (i);
 }
 
-void	build_tab(char ***tab, t_way *h)
+void	build_tab(char **tab, t_way *h)
 {
 	int i;
 	int step;
 
 	i = 0;
-	//step = len_list(h);
+	step = len_list_way(h);
 	while (h)
 	{
-		*tab[i] = ft_strdup(h->name);
+		if (i == 0)
+			tab[i] = ft_itoa(step);
+		else
+			tab[i] = ft_strdup(h->name);
 		i++;
 		h = h->next;
 	}
 }
 
+int		len_hub(char **s)
+{
+	int i;
+
+	i = 0;
+	while (s[i])
+	{
+		i++;
+	}
+	return (i);
+}
+
+void	del_hub(char **hub)
+{
+	int i;
+
+	i = 0;
+	while (hub[i])
+	{
+		free(hub[i]);
+		i++;
+	}
+}
+
+void	printer_tab(char **tab)
+{
+	int i;
+
+	i = 0;
+	while (tab[i])
+	{
+		ft_putendl(tab[i]);
+		i++;
+	}
+}
 
 void	solution(char **s, t_const *list)
 {
-	t_l *head;
-	char ***tab;
-	int i;
-	t_way *h;
-	int j, k;
-	j = k = 0;
+	t_l		*head;
+	char	*tab[START][START];
+	int		i;
+	t_way	*h;
 
 	i = 0;
-	head = NULL;
-	h = NULL;
-	tab = malloc_bzero_tab(START, START);
-	// while (j < START)
-	// {
-	// 	while (k < START)
-	// 	{
-	// 		if (tab[j][k])
-	// 			ft_putendl(tab[j][k]);
-	// 		k++;
-	// 	}
-	// 	k = 0;
-	// 	j++;
-	// }
 	while (s[i])
 	{
 		head = split_way(s[i], list);
 		h = build_way_head(head, list);
 		h = build_way(h, head, list);
-		build_tab(&tab[i], h);
-		// j = 0;
-		// while (j < 10)
-		// {
-		// 	if (ft_isprint(tab[j][i][0]))
-		// 		ft_putendl(tab[j][i]);
-		//
-		// 	j++;
-		// }
+		build_tab(tab[i], h);
 		//printer_mod(head);
-		printer_way(h);
+		//printer_way(h);
 		del_roll_mod(&head);
 		del_roll_way(&h);
 		i++;
 	}
-	//tab[i] = 0;
+	i = 0;
+	while (tab[i][0])
+	{
+		printer_tab(tab[i]);
+		del_hub(tab[i]);
+		i++;
+	}
 }
 
 void	modify(t_const *list, t_lst *map)
@@ -1508,12 +1482,12 @@ void	lemin(t_lst **head)
 	check_new_names(*head, *head);
 	//printer_valid(*head);
 	if (checker(*head))
-		read_and_modify(*head); //----- Модификация
+		read_and_modify(*head); //------------------ Модификация
 	else
 		ft_putendl("ERROR");
 }
 
-int		main(void) 	//-------------------------------Валидация
+int		main(void) 	//------------------------------- Валидация
 {
 	t_lst	*head;
 	char	*arr;
