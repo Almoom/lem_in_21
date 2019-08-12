@@ -61,13 +61,8 @@ typedef struct		s_const
 typedef struct		s_way
 {
 	struct s_way	*next;
-	char			*line;
-	int				weight;
-	char			*name1;
-	char			*name2;
-	int				c1;
-	int				c2;
-	int				loc;
+	char			*name;
+	int				len;
 	int				ants;
 	char			*start;
 	char			*end;

@@ -94,6 +94,36 @@ void	printer_mod(t_l *head)
 	}
 }
 
+void	printer_way(t_way *head)
+{
+	t_way *tmp;
+
+	tmp = head;
+	if (!tmp)
+	{
+		ft_putendl("(пусто)");
+		return ;
+	}
+	ft_putendl("name\tlen\tants\tstart\tend\n");
+	while (tmp)
+	{
+		if (tmp->name)
+			ft_putstr(tmp->name);
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->len));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->ants));
+		ft_putstr("\t");
+		if (tmp->start)
+			ft_putstr(tmp->start);
+		ft_putstr("\t");
+		if (tmp->end)
+			ft_putstr(tmp->end);
+		ft_putstr("\n");
+		tmp = tmp->next;
+	}
+}
+
 t_lst	*create_list_valid(char *s)
 {
 	t_lst *list;
@@ -1122,21 +1152,226 @@ t_l		*split_way(char *s, t_const *list)
 	return (head);
 }
 
-void	solution(char **s, t_const *list)
+int		len_list(t_l *head)
 {
-	t_l *head;
 	int i;
 
 	i = 0;
+	while (head)
+	{
+		i++;
+		head = head->next;
+	}
+	return (i);
+}
+
+t_way	*create_list_way(char *s, t_const *con, int len)
+{
+	t_way *list;
+
+	if (!(list = (t_way*)malloc(sizeof(*list))))
+		return (NULL);
+	list->next = NULL;
+	list->name = ft_strdup(s);
+	list->len = len;
+	list->ants = con->ants;
+	list->start = ft_strdup(con->start);
+	list->end = ft_strdup(con->end);
+	return (list);
+}
+
+t_way	*build_way_head(t_l *a, t_const *con)
+{
+	t_way *head;
+	int len;
+
 	head = NULL;
+	len = len_list(a);
+	while (a)
+	{
+		if (!ft_strcmp(a->start, a->name1))
+		{
+			head = create_list_way(a->name2, con, len);
+			a->ants = 0;
+			break ;
+		}
+		if (!ft_strcmp(a->start, a->name2))
+		{
+			head = create_list_way(a->name1, con, len);
+			a->ants = 0;
+			break ;
+		}
+		a = a->next;
+	}
+	return (head);
+}
+
+t_way 	*creator_way(t_way *head, char *s, t_const *con)
+{
+	int len;
+	t_way *tmp;
+
+	len = head->len;
+	tmp = head;
+	while (head->next)
+	{
+		head = head->next;
+	}
+	head->next = create_list_way(s, con, len);
+	return (tmp);
+}
+
+t_way	*scrolling_way(t_way *head)
+{
+	if (!head)
+		return (NULL);
+	while (head->next)
+	{
+		head = head->next;
+	}
+	return (head);
+}
+
+t_way	*build_way(t_way *head, t_l *a, t_const *con)
+{
+	t_l *tmp;
+	t_way *t;
+
+	tmp = a;
+	while (a)
+	{
+		t = scrolling_way(head);
+		if (a->ants != 0 && !ft_strcmp((t)->name, a->name1))
+		{
+			(head) = creator_way((head), a->name2, con);
+			a->ants = 0;
+			a = tmp;
+		}
+		else if (a->ants != 0 && !ft_strcmp((t)->name, a->name2))
+		{
+			(head) = creator_way((head), a->name1, con);
+			a->ants = 0;
+			a = tmp;
+		}
+		else
+			a = a->next;
+	}
+	return (head);
+}
+
+void 	del_list_way(t_way **del)
+{
+	if (!(del))
+		return ;
+	free((*del)->name);
+	free((*del)->start);
+	free((*del)->end);
+	free(*del);
+}
+
+void	del_roll_way(t_way **head)
+{
+	t_way *tmp;
+
+	if (!head)
+		return ;
+	while ((*head))
+	{
+		tmp = (*head)->next;
+		del_list_way(head);
+		*head = tmp;
+	}
+}
+
+char	***malloc_bzero_tab(int x, int y)
+{
+	char ***tab;
+	int i;
+	int j;
+
+	i = 0;
+	if (!(tab = (char***)malloc(sizeof(**tab) * (x + 1))))
+		return (NULL);
+	while (i < x)
+	{
+		if (!(tab[i] = (char**)malloc(sizeof(*tab) * (y + 1))))
+			return (NULL);
+		j = 0;
+		while (j < y)
+		{
+			if (!(tab[i][j] = (char*)malloc(sizeof(*tab))))
+				return (NULL);
+			ft_bzero(tab[i][j], sizeof(*tab));
+			j++;
+		}
+		tab[i][j] = 0;
+		i++;
+	}
+	tab[i] = 0;
+	return (tab);
+}
+
+void	build_tab(char ***tab, t_way *h)
+{
+	int i;
+	int step;
+
+	i = 0;
+	//step = len_list(h);
+	while (h)
+	{
+		*tab[i] = ft_strdup(h->name);
+		i++;
+		h = h->next;
+	}
+}
+
+
+void	solution(char **s, t_const *list)
+{
+	t_l *head;
+	char ***tab;
+	int i;
+	t_way *h;
+	int j, k;
+	j = k = 0;
+
+	i = 0;
+	head = NULL;
+	h = NULL;
+	tab = malloc_bzero_tab(START, START);
+	// while (j < START)
+	// {
+	// 	while (k < START)
+	// 	{
+	// 		if (tab[j][k])
+	// 			ft_putendl(tab[j][k]);
+	// 		k++;
+	// 	}
+	// 	k = 0;
+	// 	j++;
+	// }
 	while (s[i])
 	{
 		head = split_way(s[i], list);
-		/////новый список с порядком комнат
+		h = build_way_head(head, list);
+		h = build_way(h, head, list);
+		build_tab(&tab[i], h);
+		// j = 0;
+		// while (j < 10)
+		// {
+		// 	if (ft_isprint(tab[j][i][0]))
+		// 		ft_putendl(tab[j][i]);
+		//
+		// 	j++;
+		// }
 		//printer_mod(head);
+		printer_way(h);
 		del_roll_mod(&head);
+		del_roll_way(&h);
 		i++;
 	}
+	//tab[i] = 0;
 }
 
 void	modify(t_const *list, t_lst *map)
