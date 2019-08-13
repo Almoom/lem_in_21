@@ -1277,9 +1277,11 @@ void	build_tab(char **tab, t_way *h)
 		if (i == 0)
 			tab[i] = ft_itoa(step);
 		else
+		{
 			tab[i] = ft_strdup(h->name);
+			h = h->next;
+		}
 		i++;
-		h = h->next;
 	}
 }
 
@@ -1307,14 +1309,95 @@ void	del_hub(char **hub)
 	}
 }
 
-void	printer_tab(char **tab)
+void	check_sum(char *tab[START][START], int ants)
 {
+	int max;
 	int i;
+	int sum;
+	char *tmp;
+
+	max = 0;
+	i = -1;
+	while (tab[++i][0])
+	{
+		sum += ft_atoi(tab[i][0]);
+		max = max < ft_atoi(tab[i][0]) ? ft_atoi(tab[i][0]) : max;
+	}
+	i = -1;
+	if (sum > ants)
+		while (tab[++i][0])
+		{
+			if (max == ft_atoi(tab[i][0]))
+			{
+				free(tab[i][0]);
+				tmp = ft_itoa(max - 1);
+				tab[i][0] = ft_strdup(tmp);
+				free(tmp);
+				break ;
+			}
+		}
+}
+
+void	capacity(char *tab[START][START], int ants)
+{
+	double	sum;
+	int		i;
+	int		rez;
+	char	*tmp;
 
 	i = 0;
-	while (tab[i])
+	sum = 0.0;
+	rez = 0;
+	while (tab[i][0])
 	{
-		ft_putendl(tab[i]);
+		sum += ((double)1 / ft_atoi(tab[i][0]));
+		i++;
+	}
+	i = 0;
+	while (tab[i][0])
+	{
+		rez = (int)(((double)ants / ft_atoi(tab[i][0])) / sum + 0.5);
+		tmp = ft_itoa(rez);
+		free(tab[i][0]);
+		tab[i][0] = ft_strdup(tmp);
+		free(tmp);
+		i++;
+	}
+	check_sum(tab, ants);
+}
+
+void	printer_tab(char *tab[START][START])
+{
+	int i;
+	int j;
+
+	i = 0;
+	while (tab[i][0])
+	{
+		j = 0;
+		while (tab[i][j])
+		{
+			ft_putendl(tab[i][j]);
+			j++;
+		}
+		i++;
+	}
+}
+
+void	del_tab(char *tab[START][START])
+{
+	int i;
+	int j;
+
+	i = 0;
+	while (tab[i][0])
+	{
+		j = 0;
+		while (tab[i][j])
+		{
+			free(tab[i][j]);
+			j++;
+		}
 		i++;
 	}
 }
@@ -1339,13 +1422,10 @@ void	solution(char **s, t_const *list)
 		del_roll_way(&h);
 		i++;
 	}
-	i = 0;
-	while (tab[i][0])
-	{
-		printer_tab(tab[i]);
-		del_hub(tab[i]);
-		i++;
-	}
+	capacity(tab, list->ants);
+	/////////////////////////////////////////////////////////////////////vizual
+	printer_tab(tab);
+	del_tab(tab);
 }
 
 void	modify(t_const *list, t_lst *map)
