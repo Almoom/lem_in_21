@@ -21,9 +21,9 @@
 # define END -1000
 # define START 1000
 
-typedef struct		s_lst
+typedef struct		s_val
 {
-	struct s_lst	*next;
+	struct s_val	*next;
 	char			*line;
 	char			*name;
 	char			*x_y;
@@ -34,11 +34,11 @@ typedef struct		s_lst
 	int				isend;
 	int				isxy;
 	int				isedge;
-}					t_lst;
+}					t_val;
 
-typedef struct		s_l
+typedef struct		s_mod
 {
-	struct s_l		*next;
+	struct s_mod		*next;
 	char			*line;
 	int				weight;
 	char			*name1;
@@ -49,7 +49,7 @@ typedef struct		s_l
 	int				ants;
 	char			*start;
 	char			*end;
-}					t_l;
+}					t_mod;
 
 typedef struct		s_const
 {
@@ -67,7 +67,17 @@ typedef struct		s_way
 	char			*start;
 	char			*end;
 }					t_way;
-void				del_list_valid(t_lst **del);
-void				killer(t_l **head, int count, char **hub, t_const *list);
+
+typedef struct		s_ant
+{
+	struct s_ant	*next;
+	char			*name;
+	int				atstart;
+	int				in;
+	int				out;
+	char			*end;
+}					t_ant;
+void				del_list_valid(t_val **del);
+void				killer(t_mod **head, int count, char **hub, t_const *list);
 void				del_hub(char **hub);
 #endif

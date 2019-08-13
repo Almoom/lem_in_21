@@ -12,9 +12,9 @@
 
 #include "ft_list.h"
 
-void	printer_valid(t_lst *head)
+void	printer_valid(t_val *head)
 {
-	t_lst *tmp;
+	t_val *tmp;
 
 	tmp = head;
 	if (!tmp)
@@ -52,9 +52,9 @@ void	printer_valid(t_lst *head)
 	}
 }
 
-void	printer_mod(t_l *head)
+void	printer_mod(t_mod *head)
 {
-	t_l *tmp;
+	t_mod *tmp;
 
 	tmp = head;
 	if (!tmp)
@@ -124,11 +124,11 @@ void	printer_way(t_way *head)
 	}
 }
 
-t_lst	*create_list_valid(char *s)
+t_val	*create_list_valid(char *s)
 {
-	t_lst *list;
+	t_val *list;
 
-	if (!(list = (t_lst*)malloc(sizeof(*list))))
+	if (!(list = (t_val*)malloc(sizeof(*list))))
 		return (NULL);
 	list->next = NULL;
 	list->line = ft_strdup(s);
@@ -204,9 +204,9 @@ int		check_realnum(char *s)
 	return (check_realnum_add(s, i - j, j));
 }
 
-t_lst	*creator_valid(t_lst *head, char *s)
+t_val	*creator_valid(t_val *head, char *s)
 {
-	t_lst *tmp;
+	t_val *tmp;
 
 	tmp = head;
 	while (head->next)
@@ -217,9 +217,9 @@ t_lst	*creator_valid(t_lst *head, char *s)
 	return (tmp);
 }
 
-void	del_roll_valid(t_lst **head)
+void	del_roll_valid(t_val **head)
 {
-	t_lst *tmp;
+	t_val *tmp;
 
 	if (!(*head))
 		return ;
@@ -270,9 +270,9 @@ int		num_c(char *s, int ch)
 	return (count);
 }
 
-void	check_edge(t_lst *head)
+void	check_edge(t_val *head)
 {
-	t_lst	*tmp;
+	t_val	*tmp;
 	char	**av;
 
 	if (!head)
@@ -297,9 +297,9 @@ void	check_edge(t_lst *head)
 	del_split(av);
 }
 
-void	check_xy(t_lst *head)
+void	check_xy(t_val *head)
 {
-	t_lst	*tmp;
+	t_val	*tmp;
 	char	**av;
 
 	if (!head)
@@ -326,9 +326,9 @@ void	check_xy(t_lst *head)
 	check_edge(tmp);
 }
 
-void	check_commands(t_lst *head)
+void	check_commands(t_val *head)
 {
-	t_lst *tmp;
+	t_val *tmp;
 
 	tmp = head;
 	if (!head)
@@ -343,9 +343,9 @@ void	check_commands(t_lst *head)
 	}
 }
 
-void	split_name_xy(t_lst *head)
+void	split_name_xy(t_val *head)
 {
-	t_lst	*tmp;
+	t_val	*tmp;
 	char	**av;
 
 	tmp = head;
@@ -364,9 +364,9 @@ void	split_name_xy(t_lst *head)
 	}
 }
 
-void	check_dupl_xy(t_lst *a, t_lst *b)
+void	check_dupl_xy(t_val *a, t_val *b)
 {
-	t_lst *tmp;
+	t_val *tmp;
 
 	tmp = b;
 	if (!a || !b)
@@ -386,9 +386,9 @@ void	check_dupl_xy(t_lst *a, t_lst *b)
 	}
 }
 
-t_lst	*split_names(t_lst **head)
+t_val	*split_names(t_val **head)
 {
-	t_lst	*tmp;
+	t_val	*tmp;
 	char	**av;
 
 	tmp = *head;
@@ -413,7 +413,7 @@ t_lst	*split_names(t_lst **head)
 	return (*head);
 }
 
-void	del_list_valid(t_lst **del)
+void	del_list_valid(t_val **del)
 {
 	ft_memdel((void**)(&(*del)->line));
 	ft_memdel((void**)(&(*del)->name));
@@ -423,9 +423,9 @@ void	del_list_valid(t_lst **del)
 	free(*del);
 }
 
-void	check_new_names(t_lst *a, t_lst *b)
+void	check_new_names(t_val *a, t_val *b)
 {
-	t_lst	*tmp;
+	t_val	*tmp;
 	int		flag;
 
 	flag = 0;
@@ -450,9 +450,9 @@ void	check_new_names(t_lst *a, t_lst *b)
 	}
 }
 
-int		checker(t_lst *head)
+int		checker(t_val *head)
 {
-	t_lst	*t;
+	t_val	*t;
 	int		start;
 	int		end;
 
@@ -476,11 +476,11 @@ int		checker(t_lst *head)
 	return (TRUE);
 }
 
-t_l		*create_list_mod(t_const *con, t_lst *map)
+t_mod		*create_list_mod(t_const *con, t_val *map)
 {
-	t_l *list;
+	t_mod *list;
 
-	if (!(list = (t_l*)malloc(sizeof(*list))))
+	if (!(list = (t_mod*)malloc(sizeof(*list))))
 		return (NULL);
 	list->next = NULL;
 	list->line = ft_strdup(map->line);
@@ -496,9 +496,9 @@ t_l		*create_list_mod(t_const *con, t_lst *map)
 	return (list);
 }
 
-t_l		*creator_mod(t_const *con, t_lst *map, t_l *head) //<-----------ошибки
+t_mod		*creator_mod(t_const *con, t_val *map, t_mod *head) //<-----------ошибки
 {
-	t_l *tmp;
+	t_mod *tmp;
 
 	tmp = head;
 
@@ -519,7 +519,7 @@ t_l		*creator_mod(t_const *con, t_lst *map, t_l *head) //<-----------ошибк�
 	return (tmp);
 }
 
-void	del_list_mod(t_l **del)
+void	del_list_mod(t_mod **del)
 {
 	if (!(del))
 		return ;
@@ -531,9 +531,9 @@ void	del_list_mod(t_l **del)
 	free(*del);
 }
 
-void	del_roll_mod(t_l **head)
+void	del_roll_mod(t_mod **head)
 {
-	t_l *tmp;
+	t_mod *tmp;
 
 	if (!head)
 		return ;
@@ -545,7 +545,7 @@ void	del_roll_mod(t_l **head)
 	}
 }
 
-int		check_deadlock_add(t_l *a, t_l *b)
+int		check_deadlock_add(t_mod *a, t_mod *b)
 {
 	int		flag1;
 	int		flag2;
@@ -568,9 +568,9 @@ int		check_deadlock_add(t_l *a, t_l *b)
 	return (flag1 + flag2);
 }
 
-int		check_deadlock(t_l *a, t_l *b)
+int		check_deadlock(t_mod *a, t_mod *b)
 {
-	t_l		*tmp;
+	t_mod		*tmp;
 	int 	flag;
 
 	flag = 0;
@@ -590,9 +590,9 @@ int		check_deadlock(t_l *a, t_l *b)
 	return (flag == 0 ? FALSE : TRUE);
 }
 
-t_l		*scrolling_mod(t_l **h)
+t_mod		*scrolling_mod(t_mod **h)
 {
-	t_l *tmp;
+	t_mod *tmp;
 
 	while ((*h))
 	{
@@ -610,10 +610,10 @@ t_l		*scrolling_mod(t_l **h)
 	return (*h);
 }
 
-t_l	*del_deadlock(t_l **head)
+t_mod	*del_deadlock(t_mod **head)
 {
-	t_l *tmp_prev;
-	t_l *h;
+	t_mod *tmp_prev;
+	t_mod *h;
 
 	h = scrolling_mod(head);
 	while ((*head))
@@ -639,7 +639,7 @@ t_l	*del_deadlock(t_l **head)
 	return (h);
 }
 
-t_lst	*scrolling_valid(t_lst *map)
+t_val	*scrolling_valid(t_val *map)
 {
 	if (!map)
 		return (NULL);
@@ -652,7 +652,7 @@ t_lst	*scrolling_valid(t_lst *map)
 	return (map);
 }
 
-int		check_deadlock_start_end_add(t_l *a, t_l *b)
+int		check_deadlock_start_end_add(t_mod *a, t_mod *b)
 {
 	int		flag1;
 	int		flag2;
@@ -680,9 +680,9 @@ int		check_deadlock_start_end_add(t_l *a, t_l *b)
 	return (flag1 + flag2);
 }
 
-int		check_deadlock_start_end(t_l *a, t_l *b)
+int		check_deadlock_start_end(t_mod *a, t_mod *b)
 {
-	t_l		*tmp;
+	t_mod		*tmp;
 	int		flag;
 
 	flag = 0;
@@ -706,7 +706,7 @@ int		check_deadlock_start_end(t_l *a, t_l *b)
 	return (TRUE);
 }
 
-int		simple_solve(t_l *h)
+int		simple_solve(t_mod *h)
 {
 	while (h)
 	{
@@ -718,7 +718,7 @@ int		simple_solve(t_l *h)
 	return (FALSE);
 }
 
-void	print_simple_solve(t_l *h)
+void	print_simple_solve(t_mod *h)
 {
 	int i;
 
@@ -736,11 +736,11 @@ void	print_simple_solve(t_l *h)
 	ft_putchar('\n');
 }
 
-void 	start_forward_list(t_l **head)
+void 	start_forward_list(t_mod **head)
 {
-	t_l *tmp_prev;
-	t_l *oldh;
-	t_l *tmp;
+	t_mod *tmp_prev;
+	t_mod *oldh;
+	t_mod *tmp;
 
 	oldh = *head;
 	while ((*head))
@@ -765,7 +765,7 @@ void 	start_forward_list(t_l **head)
 	tmp->next = oldh;
 }
 
-int		check_unlocal_add(t_l *tmp)
+int		check_unlocal_add(t_mod *tmp)
 {
 	int flag;
 
@@ -782,9 +782,9 @@ int		check_unlocal_add(t_l *tmp)
 	return (flag);
 }
 
-int		check_unlocal(t_l *a, t_l *b)
+int		check_unlocal(t_mod *a, t_mod *b)
 {
-	t_l		*tmp;
+	t_mod		*tmp;
 
 	tmp = b;
 	if (!a || !b)
@@ -805,7 +805,7 @@ int		check_unlocal(t_l *a, t_l *b)
 	return (check_unlocal_add(tmp));
 }
 
-void	vertex_start_end(t_l *a)
+void	vertex_start_end(t_mod *a)
 {
 	a->c1 = !ft_strcmp(a->name1, a->end) ? END : a->c1;
 	a->c2 = !ft_strcmp(a->name2, a->end) ? END : a->c2;
@@ -813,7 +813,7 @@ void	vertex_start_end(t_l *a)
 	a->c2 = !ft_strcmp(a->name2, a->start) ? START : a->c2;
 }
 
-int		cost_vertex_add(t_l *a, t_l *b)
+int		cost_vertex_add(t_mod *a, t_mod *b)
 {
 	int count1;
 	int count2;
@@ -837,7 +837,7 @@ int		cost_vertex_add(t_l *a, t_l *b)
 	return (FALSE);
 }
 
-int		cost_vertex(t_l *a, t_l *b)
+int		cost_vertex(t_mod *a, t_mod *b)
 {
 	int flag;
 
@@ -858,7 +858,7 @@ int		cost_vertex(t_l *a, t_l *b)
 	return (FALSE);
 }
 
-int		find_cheap_edge(t_l *h, char *name)
+int		find_cheap_edge(t_mod *h, char *name)
 {
 	int min;
 
@@ -873,13 +873,13 @@ int		find_cheap_edge(t_l *h, char *name)
 	return (min);
 }
 
-void	joiner(t_l *t, char **way)
+void	joiner(t_mod *t, char **way)
 {
 	t->ants = 0;
 	*way = ft_strjoin_free(ft_strjoin_free(*way, "\n", 1, 0), t->line, 1, 0);
 }
 
-int		finder(t_l *h, t_l *t, char *from, char **way)
+int		finder(t_mod *h, t_mod *t, char *from, char **way)
 {
 	int cost;
 
@@ -907,7 +907,7 @@ int		finder(t_l *h, t_l *t, char *from, char **way)
 	return (0);
 }
 
-void	devourer_add(t_l *a, t_l *b, int flag)
+void	devourer_add(t_mod *a, t_mod *b, int flag)
 {
 	while (b)
 	{
@@ -935,7 +935,7 @@ void	devourer_add(t_l *a, t_l *b, int flag)
 	}
 }
 
-void	devourer(t_l *h)
+void	devourer(t_mod *h)
 {
 	while (h)
 	{
@@ -955,7 +955,7 @@ void	devourer(t_l *h)
 	}
 }
 
-int		check_cheap_vertex(t_l *h)
+int		check_cheap_vertex(t_mod *h)
 {
 	while (h)
 	{
@@ -966,7 +966,7 @@ int		check_cheap_vertex(t_l *h)
 	return (FALSE);
 }
 
-int		check_dubl_way_add(t_l *a, t_l *b)
+int		check_dubl_way_add(t_mod *a, t_mod *b)
 {
 	int		flag1;
 	int		flag2;
@@ -989,9 +989,9 @@ int		check_dubl_way_add(t_l *a, t_l *b)
 	return (flag1 + flag2);
 }
 
-int		check_dubl_way(t_l *a, t_l *b)
+int		check_dubl_way(t_mod *a, t_mod *b)
 {
-	t_l		*tmp;
+	t_mod		*tmp;
 	int 	flag;
 
 	flag = 0;
@@ -1017,7 +1017,7 @@ int		check_dubl_way(t_l *a, t_l *b)
 	return (flag == 0 ? FALSE : TRUE);
 }
 
-void 	separator(t_l **head, int count, char **hub, t_const *list)
+void 	separator(t_mod **head, int count, char **hub, t_const *list)
 {
 	char *way;
 
@@ -1035,7 +1035,7 @@ void 	separator(t_l **head, int count, char **hub, t_const *list)
 		killer(head, count, hub, list);
 }
 
-void	killer(t_l **head, int count, char **hub, t_const *list)
+void	killer(t_mod **head, int count, char **hub, t_const *list)
 {
 	while (check_deadlock(*head, *head))
 		*head = del_deadlock(head);
@@ -1064,13 +1064,13 @@ void	killer(t_l **head, int count, char **hub, t_const *list)
 		separator(head, count + 1, hub, list);
 }
 
-t_l		*create_list_mod_way(t_const *con, char *s)
+t_mod		*create_list_mod_way(t_const *con, char *s)
 {
-	t_l *list;
+	t_mod *list;
 	char **arr;
 
 	arr = ft_strsplit(s, '-');
-	if (!(list = (t_l*)malloc(sizeof(*list))))
+	if (!(list = (t_mod*)malloc(sizeof(*list))))
 		return (NULL);
 	list->next = NULL;
 	list->line = ft_strdup(s);
@@ -1087,9 +1087,9 @@ t_l		*create_list_mod_way(t_const *con, char *s)
 	return (list);
 }
 
-t_l		*creator_mod_way(t_const *con, char *s, t_l *head) //<-----------ошибки
+t_mod		*creator_mod_way(t_const *con, char *s, t_mod *head) //<-----------ошибки
 {
-	t_l *tmp;
+	t_mod *tmp;
 
 	tmp = head;
 	while (head->next)
@@ -1100,9 +1100,9 @@ t_l		*creator_mod_way(t_const *con, char *s, t_l *head) //<-----------ошибк
 	return (tmp);
 }
 
-t_l		*split_way(char *s, t_const *list)
+t_mod		*split_way(char *s, t_const *list)
 {
-	t_l *head;
+	t_mod *head;
 	char **arr;
 	int i;
 
@@ -1121,7 +1121,7 @@ t_l		*split_way(char *s, t_const *list)
 	return (head);
 }
 
-int		len_list_mod(t_l *head)
+int		len_list_mod(t_mod *head)
 {
 	int i;
 
@@ -1149,7 +1149,7 @@ t_way	*create_list_way(char *s, t_const *con, int len)
 	return (list);
 }
 
-t_way	*build_way_head(t_l *a, t_const *con)
+t_way	*build_way_head(t_mod *a, t_const *con)
 {
 	t_way *head;
 	int len;
@@ -1201,9 +1201,9 @@ t_way	*scrolling_way(t_way *head)
 	return (head);
 }
 
-t_way	*build_way(t_way *head, t_l *a, t_const *con)
+t_way	*build_way(t_way *head, t_mod *a, t_const *con)
 {
-	t_l *tmp;
+	t_mod *tmp;
 	t_way *t;
 
 	tmp = a;
@@ -1283,6 +1283,7 @@ void	build_tab(char **tab, t_way *h)
 		}
 		i++;
 	}
+	tab[i] = NULL;
 }
 
 int		len_hub(char **s)
@@ -1402,60 +1403,6 @@ void	del_tab(char *tab[START][START])
 	}
 }
 
-void	solution(char **s, t_const *list)
-{
-	t_l		*head;
-	char	*tab[START][START];
-	int		i;
-	t_way	*h;
-
-	i = 0;
-	while (s[i])
-	{
-		head = split_way(s[i], list);
-		h = build_way_head(head, list);
-		h = build_way(h, head, list);
-		build_tab(tab[i], h);
-		//printer_mod(head);
-		//printer_way(h);
-		del_roll_mod(&head);
-		del_roll_way(&h);
-		i++;
-	}
-	capacity(tab, list->ants);
-	/////////////////////////////////////////////////////////////////////vizual
-	printer_tab(tab);
-	del_tab(tab);
-}
-
-void	modify(t_const *list, t_lst *map)
-{
-	t_l *head;
-	int count;
-	char *hub[START];
-
-	head = NULL;
-	count = -1;
-	ft_bzero(hub, START);
-	if (!(map = scrolling_valid(map)))
-		return ;
-	while (map)
-	{
-		if (!head && ft_strcmp(map->name1, map->name2))
-			head = create_list_mod(list, map);
-		else if (head && ft_strcmp(map->name1, map->name2))
-			head = creator_mod(list, map, head);
-		map = map->next;
-	}
-	if (simple_solve(head))
-		print_simple_solve(head);
-	else
-		killer(&head, count, hub, list);
-	solution(hub, list);//<---------------------------расшифровка путей
-	del_hub(hub);
-	del_roll_mod(&head);
-}
-
 t_const	*create_list_const(void)
 {
 	t_const *list;
@@ -1475,36 +1422,7 @@ void	del_list_const(t_const **list)
 	free(*list);
 }
 
-void	read_and_modify(t_lst *map)
-{
-	t_lst	*h;
-	t_const *list;
-
-	h = map;
-	if (!(list = create_list_const()))
-		return ;
-	while (map)
-	{
-		if (map->isedge)
-			break ;
-		list->ants = map->isnum ? ft_atoi(map->line) : list->ants;
-		if (map->isstart)
-		{
-			free(list->start);
-			list->start = ft_strdup(map->next->name);
-		}
-		if (map->isend)
-		{
-			free(list->end);
-			list->end = ft_strdup(map->next->name);
-		}
-		map = map->next;
-	}
-	modify(list, h);
-	del_list_const(&list);
-}
-
-void	check_dupl_start(t_lst *head)
+void	check_dupl_start(t_val *head)
 {
 	char *tmp;
 
@@ -1527,7 +1445,7 @@ void	check_dupl_start(t_lst *head)
 	ft_memdel((void**)(&tmp));
 }
 
-void	check_dupl_end(t_lst *head)
+void	check_dupl_end(t_val *head)
 {
 	char *tmp;
 
@@ -1550,7 +1468,328 @@ void	check_dupl_end(t_lst *head)
 	ft_memdel((void**)(&tmp));
 }
 
-void	lemin(t_lst **head)
+t_ant	*create_list_ant(int num, t_const *con)
+{
+	t_ant *list;
+	char *tmp;
+
+	if (!(list = (t_ant*)malloc(sizeof(*list))))
+		return (NULL);
+	tmp = ft_itoa(num + 1);
+	list->next = NULL;
+	list->name = ft_strjoin_free("L", tmp, 0, 1);
+	list->atstart = con->ants;
+	list->in = 0;
+	list->out = 0;
+	list->end = ft_strdup(con->end);
+	return (list);
+}
+
+t_ant	*creator_ants(int num, t_const *con, t_ant *head)
+{
+	t_ant *tmp;
+
+	tmp = head;
+	while (head->next)
+	{
+		head = head->next;
+	}
+	head->next = create_list_ant(num, con);
+	return (tmp);
+}
+
+void	printer_ants(t_ant *head)
+{
+	t_ant *tmp;
+
+	tmp = head;
+	if (!tmp)
+	{
+		ft_putendl("(пусто)");
+		return ;
+	}
+	ft_putendl("name\tatstart\tin\tout\tend\n");
+	while (tmp)
+	{
+		if (tmp->name)
+			ft_putstr(tmp->name);
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->atstart));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->in));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->out));
+		ft_putstr("\t");
+		if (tmp->end)
+			ft_putstr(tmp->end);
+		ft_putstr("\n");
+		tmp = tmp->next;
+	}
+}
+
+void	del_list_ant(t_ant **del)
+{
+	ft_memdel((void**)(&(*del)->name));
+	ft_memdel((void**)(&(*del)->end));
+	free(*del);
+}
+
+void	del_ants(t_ant **head)
+{
+	t_ant *tmp;
+
+	if (!(*head))
+		return ;
+	while ((*head))
+	{
+		tmp = (*head)->next;
+		del_list_ant(head);
+		*head = tmp;
+	}
+}
+
+int		check_ants_on_map(t_ant *head)
+{
+	while (head)
+	{
+		if (head->in == 0 || head->out == 0)
+			return (TRUE);
+		head = head->next;
+	}
+	return (FALSE);
+}
+
+void 	printer_tact(t_ant *head, char *room)
+{
+	ft_putstr(head->name);
+	ft_putchar('-');
+	ft_putstr(room);
+	if (head->next && head->next->out != 1)
+		ft_putchar(' ');
+}
+
+void	decrement_ants_for_way(char *s)
+{
+	int n;
+
+	n = ft_atoi(s);
+	if (n > 0)
+	{
+		n--;
+		free(s);
+		s = ft_itoa(n);
+	}
+}
+
+void	visualization(char *tab[START][START], t_ant *head)
+{
+	int i;
+	int j;
+	t_ant *tmp;
+
+	i = 0;
+	j = 1;
+	tmp = head;
+	if (check_ants_on_map(head))
+	{
+		while (tab[i][0] && head)
+		{
+			decrement_ants_for_way(tab[i][0]);
+			printer_tact(head, tab[i][j]);
+			head->in = 1;
+			head = head->next;
+			i++;
+		}
+		ft_putchar('\n');
+		//printer_ants(tmp);
+		//printer_tab(tab);
+		visualization(tab, head);
+	}
+	head = tmp;
+	j++;
+	i = 0;
+	if (check_ants_on_map(head))
+	{
+		while (tab[i][0] && head)
+		{
+			decrement_ants_for_way(tab[i][0]);
+			printer_tact(head, tab[i][j]);
+			head->in = 1;
+			head = head->next;
+			i++;
+		}
+		ft_putchar('\n');
+		//printer_ants(tmp);
+		//printer_tab(tab);
+		visualization(tab, head);
+	}
+}
+
+void	deity(char *tab[START][START], t_const *con)
+{
+	t_ant *head;
+	int i;
+
+	i = 0;
+	head = NULL;
+	while (i < con->ants)
+	{
+		if (!head)
+			head = create_list_ant(i, con);
+		else
+			head = creator_ants(i, con, head);
+		i++;
+	}
+	visualization(tab, head);
+	del_ants(&head);
+}
+
+// void	zero_tab(char *tab[START][START])
+// {
+// 	int i;
+// 	int j;
+//
+// 	i = 0;
+// 	while (i < START)
+// 	{
+// 		j = 0;
+// 		while (j < START)
+// 		{
+// 			tab[i][j] = NULL;
+// 			j++;
+// 		}
+// 		i++;
+// 	}
+// }
+//
+// void 	otsechka(char *(*tab)[START])
+// {
+// 	int i;
+//
+// 	i = 0;
+//
+// 	while (i < START)
+// 	{
+// 		*tab[i] = NULL;
+// 		i++;
+// 	}
+// 	ft_putendl("--");
+// }
+//
+// char	***malloc_bzero_tab(int x, int y)
+// {
+// 	char ***tab;
+// 	int i;
+// 	int j;
+//
+// 	i = 0;
+// 	if (!(tab = (char***)malloc(sizeof(**tab) * (x + 1))))
+// 		return (NULL);
+// 	while (i < x)
+// 	{
+// 		if (!(tab[i] = (char**)malloc(sizeof(*tab) * (y + 1))))
+// 			return (NULL);
+// 		j = 0;
+// 		while (j < y)
+// 		{
+// 			if (!(tab[i][j] = (char*)malloc(sizeof(*tab))))
+// 				return (NULL);
+// 			ft_bzero(tab[i][j], sizeof(*tab));
+// 			j++;
+// 		}
+// 		tab[i][j] = 0;
+// 		i++;
+// 	}
+// 	tab[i] = 0;
+// 	return (tab);
+// }
+
+void	solution(char **s, t_const *list)
+{
+	t_mod	*head;
+	char	*tab[START][START];
+	int		i;
+	t_way	*h;
+
+	i = 0;
+	//zero_tab(tab);
+	while (s[i])
+	{
+		head = split_way(s[i], list);
+		h = build_way_head(head, list);
+		h = build_way(h, head, list);
+		build_tab(tab[i], h);
+		//printer_mod(head);
+		//printer_way(h);
+		del_roll_mod(&head);
+		del_roll_way(&h);
+		i++;
+	}
+	//otsechka(&tab[i]);
+	capacity(tab, list->ants);
+	deity(tab, list); //----------------------------создаем список муравьев
+	//printer_tab(tab);
+	del_tab(tab);
+}
+
+void	modify(t_const *list, t_val *map)
+{
+	t_mod *head;
+	int count;
+	char *hub[START];
+
+	head = NULL;
+	count = -1;
+	ft_bzero(hub, START);
+	if (!(map = scrolling_valid(map)))
+		return ;
+	while (map)
+	{
+		if (!head && ft_strcmp(map->name1, map->name2))
+			head = create_list_mod(list, map);
+		else if (head && ft_strcmp(map->name1, map->name2))
+			head = creator_mod(list, map, head);
+		map = map->next;
+	}
+	if (simple_solve(head))
+		print_simple_solve(head); //-------------- визуал для случая start-end
+	else
+		killer(&head, count, hub, list); //----- рекурсивно формируем хаб путей
+	solution(hub, list);//---------------------расшифровка хаба путей в таблицу
+	del_hub(hub);
+	del_roll_mod(&head);
+}
+
+void	read_const(t_val *map)
+{
+	t_val	*h;
+	t_const *list;
+
+	h = map;
+	if (!(list = create_list_const()))
+		return ;
+	while (map)
+	{
+		if (map->isedge)
+			break ;
+		list->ants = map->isnum ? ft_atoi(map->line) : list->ants;
+		if (map->isstart)
+		{
+			free(list->start);
+			list->start = ft_strdup(map->next->name);
+		}
+		if (map->isend)
+		{
+			free(list->end);
+			list->end = ft_strdup(map->next->name);
+		}
+		map = map->next;
+	}
+	modify(list, h); //-------------------- читаем список t_val в список t_mod
+	del_list_const(&list);
+}
+
+void	lemin(t_val **head)
 {
 	check_xy(*head);
 	split_name_xy(*head);
@@ -1562,14 +1801,14 @@ void	lemin(t_lst **head)
 	check_new_names(*head, *head);
 	//printer_valid(*head);
 	if (checker(*head))
-		read_and_modify(*head); //------------------ Модификация
+		read_const(*head); //----------- читаем константы карты в лист t_const
 	else
 		ft_putendl("ERROR");
 }
 
-int		main(void) 	//------------------------------- Валидация
+int		main(void) 	//---------------------------- читаем карту в список t_val
 {
-	t_lst	*head;
+	t_val	*head;
 	char	*arr;
 
 	head = NULL;
@@ -1588,7 +1827,7 @@ int		main(void) 	//------------------------------- Валидация
 	ft_memdel((void**)(&arr));
 	if (!head)
 		return (0);
-	lemin(&head);
+	lemin(&head); //-------------------------------- проверяем валидность карты
 	del_roll_valid(&head);
 	return (0);
 }
