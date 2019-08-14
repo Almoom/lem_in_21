@@ -1045,7 +1045,7 @@ void 	separator(t_mod **head, int count, char **hub, t_const *list)
 		killer(head, count, hub, list);
 }
 
-void	killer_add(t_mod **head)
+void	killer(t_mod **head, int count, char **hub, t_const *list)
 {
 	while (check_deadlock(*head, *head))
 		*head = del_deadlock(head);
@@ -1057,12 +1057,10 @@ void	killer_add(t_mod **head)
 	else
 		(*head)->loc = 1;
 	if (check_unlocal(*head, *head))
+	{
+		ft_putendl("--");
 		*head = del_deadlock(head);
-}
-
-void	killer(t_mod **head, int count, char **hub, t_const *list)
-{
-	killer_add(head);
+	}
 	while (cost_vertex(*head, *head))
 	{
 		while (check_cheap_vertex(*head))
@@ -1378,6 +1376,102 @@ void	check_dupl_end(t_val *head)
 	ft_memdel((void**)(&tmp));
 }
 
+// int		check_ants_on_map(t_ant *head)
+// {
+// 	while (head)
+// 	{
+// 		if (head->in == 0 || head->out == 0)
+// 			return (TRUE);
+// 		head = head->next;
+// 	}
+// 	return (FALSE);
+// }
+//
+// void 	printer_tact(t_ant *head, char *room)
+// {
+// 	ft_putstr(head->name);
+// 	ft_putchar('-');
+// 	ft_putstr(room);
+// 	if (head->next && head->next->out != 1)
+// 		ft_putchar(' ');
+// }
+//
+// void	decrement_ants_for_way(char *s)
+// {
+// 	int n;
+//
+// 	n = ft_atoi(s);
+// 	if (n > 0)
+// 	{
+// 		n--;
+// 		free(s);
+// 		s = ft_itoa(n);
+// 	}
+// }
+//
+// void	visualization(char *tab[START][START], t_ant *head)
+// {
+// 	int i;
+// 	int j;
+// 	t_ant *tmp;
+//
+// 	i = 0;
+// 	j = 1;
+// 	tmp = head;
+// 	if (check_ants_on_map(head))
+// 	{
+// 		while (tab[i][0] && head)
+// 		{
+// 			decrement_ants_for_way(tab[i][0]);
+// 			printer_tact(head, tab[i][j]);
+// 			head->in = 1;
+// 			head = head->next;
+// 			i++;
+// 		}
+// 		ft_putchar('\n');
+// 		//printer_ants(tmp);
+// 		//printer_tab(tab);
+// 		visualization(tab, head);
+// 	}
+// 	head = tmp;
+// 	j++;
+// 	i = 0;
+// 	if (check_ants_on_map(head))
+// 	{
+// 		while (tab[i][0] && head)
+// 		{
+// 			decrement_ants_for_way(tab[i][0]);
+// 			printer_tact(head, tab[i][j]);
+// 			head->in = 1;
+// 			head = head->next;
+// 			i++;
+// 		}
+// 		ft_putchar('\n');
+// 		//printer_ants(tmp);
+// 		//printer_tab(tab);
+// 		visualization(tab, head);
+// 	}
+// }
+//
+// void	deity(char *tab[START][START], t_const *con)
+// {
+// 	t_ant *head;
+// 	int i;
+//
+// 	i = 0;
+// 	head = NULL;
+// 	while (i < con->ants)
+// 	{
+// 		if (!head)
+// 			head = create_list_ant(i, con);
+// 		else
+// 			head = creator_ants(i, con, head);
+// 		i++;
+// 	}
+// 	visualization(tab, head);
+// 	del_ants(&head);
+// }
+
 void	printer_arr_way(t_way *arr[START])
 {
 	int i;
@@ -1431,7 +1525,7 @@ void	check_sum(t_way *arr[START], int max, int min)
 	}
 }
 
-void	capacity(t_way *arr[START], int n)
+void	capacity(t_way *arr[START])
 {
 	double	sum;
 	int		i;
@@ -1440,7 +1534,7 @@ void	capacity(t_way *arr[START], int n)
 	i = 0;
 	sum = 0.0;
 	rez = 0;
-	while (i < n)
+	while (arr[i])
 	{
 		sum += ((double)1 / arr[i]->len);
 		i++;
@@ -1466,6 +1560,7 @@ int		check_ants_on_map(t_way *arr[START])
 		tmp = arr[i];
 		while (tmp)
 		{
+			//printf("%d - %d\n", tmp->ants_way, tmp->num_ant);
 			if (tmp->ants_way != 0 || tmp->num_ant != 0)
 				return (TRUE);
 			tmp = tmp->next;
@@ -1534,6 +1629,7 @@ void	horde_is_coming(t_way *arr[START])
 	int i;
 
 	num = 1;
+
 	while (check_ants_on_map(arr))
 	{
 		i = 0;
@@ -1552,57 +1648,7 @@ void	horde_is_coming(t_way *arr[START])
 	}
 }
 
-int		wide_search(t_mod *h, t_mod *t, char *from, char **way)
-{
-	if (!t)
-		wide_search(h, h, from, way);
-	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
-	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
-	{
-		joiner(t, way);
-		return (0);
-	}
-	else if (!ft_strcmp(t->name1, from) && t->ants)
-	{
-		joiner(t, way);
-		return (wide_search(h, t->next, t->name2, way));
-	}
-	else if (!ft_strcmp(t->name2, from) && t->ants)
-	{
-		joiner(t, way);
-		return (wide_search(h, t->next, t->name1, way));
-	}
-	else
-		return (wide_search(h, t->next, from, way));
-	return (0);
-}
-
-t_way 	*simple_search(t_const *list, t_val *map)
-{
-	t_way	*h;
-	t_mod	*head;
-	char	*way;
-
-	head = NULL;
-	way = ft_strnew(0);
-	while (map)
-	{
-		if (!head && ft_strcmp(map->name1, map->name2))
-			head = create_list_mod(list, map);
-		else if (head && ft_strcmp(map->name1, map->name2))
-			head = creator_mod(list, map, head);
-		map = map->next;
-	}
-	killer_add(&head);
-	// printer_mod(head);
-	// ft_putendl("--");
-	wide_search(head, head, !ft_strcmp(head->name1, head->start) ? head->name1 : head->name2, &way);
-	ft_putendl(way);
-	ft_putendl("---");
-	return (NULL);
-}
-
-void	solution(char **s, t_const *list, t_val *old)
+void	solution(char **s, t_const *list)
 {
 	t_mod	*head;
 	int		i;
@@ -1610,22 +1656,17 @@ void	solution(char **s, t_const *list, t_val *old)
 	t_way	*arr[START];
 
 	i = 0;
-	if (!s[1])
-		h = simple_search(list, old); //--------ищем кратчайший путь тк он всего один
-	else
+	while (s[i])
 	{
-		while (s[i])
-		{
-			head = split_way(s[i], list);
-			h = build_way_head(head, list);
-			h = build_way(h, head, list);
-			arr[i] = h;
-			//printer_mod(head);
-			del_roll_mod(&head);
-			i++;
-		}
+		head = split_way(s[i], list);
+		h = build_way_head(head, list);
+		h = build_way(h, head, list);
+		arr[i] = h;
+		//printer_mod(head);
+		del_roll_mod(&head);
+		i++;
 	}
-	capacity(arr, i);
+	capacity(arr);
 	horde_is_coming(arr); //--------------------------------start
 	//printer_arr_way(arr);
 	del_arr_way(arr);
@@ -1636,14 +1677,12 @@ void	modify(t_const *list, t_val *map)
 	t_mod *head;
 	int count;
 	char *hub[START];
-	t_val *tmp;
 
-	count = -1;
 	head = NULL;
+	count = -1;
 	ft_bzero(hub, START);
 	if (!(map = scrolling_valid(map)))
 		return ;
-	tmp = map;
 	while (map)
 	{
 		if (!head && ft_strcmp(map->name1, map->name2))
@@ -1655,8 +1694,8 @@ void	modify(t_const *list, t_val *map)
 	if (simple_solve(head))
 		print_simple_solve(head); //-------------- визуал для случая start-end
 	else
-		killer(&head, count, hub, list);//----- рекурсивно формируем хаб путей
-	solution(hub, list, tmp);//---------------------расшифровка хаба путей в таблицу
+		killer(&head, count, hub, list); //----- рекурсивно формируем хаб путей
+	solution(hub, list);//---------------------расшифровка хаба путей в таблицу
 	del_hub(hub);
 	del_roll_mod(&head);
 }

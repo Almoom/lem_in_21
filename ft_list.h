@@ -70,15 +70,15 @@ typedef struct		s_way
 	char			*end;
 }					t_way;
 
-typedef struct		s_ant
-{
-	struct s_ant	*next;
-	char			*name;
-	int				atstart;
-	int				in;
-	int				out;
-	char			*end;
-}					t_ant;
+// typedef struct		s_ant
+// {
+// 	struct s_ant	*next;
+// 	char			*name;
+// 	int				atstart;
+// 	int				in;
+// 	int				out;
+// 	char			*end;
+// }					t_ant;
 void				del_list_valid(t_val **del);
 void				killer(t_mod **head, int count, char **hub, t_const *list);
 void				del_hub(char **hub);
