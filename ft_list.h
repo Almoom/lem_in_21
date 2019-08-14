@@ -64,6 +64,8 @@ typedef struct		s_way
 	char			*name;
 	int				len;
 	int				ants;
+	int				ants_way;
+	int				num_ant;
 	char			*start;
 	char			*end;
 }					t_way;

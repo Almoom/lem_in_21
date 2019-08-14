@@ -62,7 +62,7 @@ void	printer_mod(t_mod *head)
 		ft_putendl("(пусто)");
 		return ;
 	}
-	ft_putendl("line\t\tw\tname1\tc1\tname2\tc2\tloc\tants\tstart\tend\n");
+	ft_putendl("line\tw\tname1\tc1\tname2\tc2\tloc\tants\tstart\tend\n");
 	while (tmp)
 	{
 		if (tmp->line)
@@ -788,28 +788,22 @@ int		check_unlocal_add(t_mod *tmp)
 
 int		check_unlocal(t_mod *a, t_mod *b)
 {
-	t_mod	*tmp;
-	int		flag;
+	t_mod		*tmp;
 
 	tmp = b;
 	if (!a || !b)
 		return (FALSE);
 	while (a)
 	{
-		flag = 0;
 		while (b)
 		{
 			if (a != b && b->loc != 1 && a->loc == 1 && (!ft_strcmp
 			(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2) ||
 			!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2)))
-			{
 				b->loc = 1;
-				flag = 1;
-			}
 			b = b->next;
 		}
 		b = tmp;
-		a = flag == 1 ? tmp : a;
 		a = a->next;
 	}
 	return (check_unlocal_add(tmp));
@@ -1057,10 +1051,7 @@ void	killer(t_mod **head, int count, char **hub, t_const *list)
 	else
 		(*head)->loc = 1;
 	if (check_unlocal(*head, *head))
-	{
-		ft_putendl("--");
 		*head = del_deadlock(head);
-	}
 	while (cost_vertex(*head, *head))
 	{
 		while (check_cheap_vertex(*head))
@@ -1073,8 +1064,6 @@ void	killer(t_mod **head, int count, char **hub, t_const *list)
 		else
 			break ;
 	}
-	printer_mod(*head);
-	ft_putendl("--");
 	if ((*head))
 		separator(head, count + 1, hub, list);
 }
@@ -1269,6 +1258,40 @@ void	del_roll_way(t_way **head)
 	}
 }
 
+int		len_list_way(t_way *head)
+{
+	int i;
+
+	i = 0;
+	while (head)
+	{
+		i++;
+		head = head->next;
+	}
+	return (i);
+}
+
+void	build_tab(char **tab, t_way *h)
+{
+	int i;
+	int step;
+
+	i = 0;
+	step = len_list_way(h);
+	while (h)
+	{
+		if (i == 0)
+			tab[i] = ft_itoa(step);
+		else
+		{
+			tab[i] = ft_strdup(h->name);
+			h = h->next;
+		}
+		i++;
+	}
+	tab[i] = NULL;
+}
+
 int		len_hub(char **s)
 {
 	int i;
@@ -1289,6 +1312,81 @@ void	del_hub(char **hub)
 	while (hub[i])
 	{
 		free(hub[i]);
+		i++;
+	}
+}
+
+// void	check_sum(char *tab[START][START], int ants)
+// {
+// 	int max;
+// 	int i;
+// 	int sum;
+// 	char *tmp;
+//
+// 	max = 0;
+// 	i = -1;
+// 	while (tab[++i][0])
+// 	{
+// 		sum += ft_atoi(tab[i][0]);
+// 		max = max < ft_atoi(tab[i][0]) ? ft_atoi(tab[i][0]) : max;
+// 	}
+// 	i = -1;
+// 	if (sum > ants)
+// 		while (tab[++i][0])
+// 		{
+// 			if (max == ft_atoi(tab[i][0]))
+// 			{
+// 				free(tab[i][0]);
+// 				tmp = ft_itoa(max - 1);
+// 				tab[i][0] = ft_strdup(tmp);
+// 				free(tmp);
+// 				break ;
+// 			}
+// 		}
+// }
+
+// void	capacity(char *tab[START][START], int ants)
+// {
+// 	double	sum;
+// 	int		i;
+// 	int		rez;
+// 	char	*tmp;
+//
+// 	i = 0;
+// 	sum = 0.0;
+// 	rez = 0;
+// 	while (tab[i][0])
+// 	{
+// 		sum += ((double)1 / ft_atoi(tab[i][0]));
+// 		i++;
+// 	}
+// 	i = 0;
+// 	while (tab[i][0])
+// 	{
+// 		rez = (int)(((double)ants / ft_atoi(tab[i][0])) / sum + 0.5);
+// 		tmp = ft_itoa(rez);
+// 		free(tab[i][0]);
+// 		tab[i][0] = ft_strdup(tmp);
+// 		free(tmp);
+// 		i++;
+// 	}
+// 	check_sum(tab, ants);
+// }
+
+void	printer_tab(char *tab[START][START])
+{
+	int i;
+	int j;
+
+	i = 0;
+	while (tab[i][0])
+	{
+		j = 0;
+		while (tab[i][j])
+		{
+			ft_putendl(tab[i][j]);
+			j++;
+		}
 		i++;
 	}
 }
@@ -1376,100 +1474,240 @@ void	check_dupl_end(t_val *head)
 	ft_memdel((void**)(&tmp));
 }
 
-// int		check_ants_on_map(t_ant *head)
-// {
-// 	while (head)
-// 	{
-// 		if (head->in == 0 || head->out == 0)
-// 			return (TRUE);
-// 		head = head->next;
-// 	}
-// 	return (FALSE);
-// }
-//
-// void 	printer_tact(t_ant *head, char *room)
-// {
-// 	ft_putstr(head->name);
-// 	ft_putchar('-');
-// 	ft_putstr(room);
-// 	if (head->next && head->next->out != 1)
-// 		ft_putchar(' ');
-// }
-//
-// void	decrement_ants_for_way(char *s)
-// {
-// 	int n;
-//
-// 	n = ft_atoi(s);
-// 	if (n > 0)
-// 	{
-// 		n--;
-// 		free(s);
-// 		s = ft_itoa(n);
-// 	}
-// }
-//
-// void	visualization(char *tab[START][START], t_ant *head)
+t_ant	*create_list_ant(int num, t_const *con)
+{
+	t_ant *list;
+	char *tmp;
+
+	if (!(list = (t_ant*)malloc(sizeof(*list))))
+		return (NULL);
+	tmp = ft_itoa(num + 1);
+	list->next = NULL;
+	list->name = ft_strjoin_free("L", tmp, 0, 1);
+	list->atstart = con->ants;
+	list->in = 0;
+	list->out = 0;
+	list->end = ft_strdup(con->end);
+	return (list);
+}
+
+t_ant	*creator_ants(int num, t_const *con, t_ant *head)
+{
+	t_ant *tmp;
+
+	tmp = head;
+	while (head->next)
+	{
+		head = head->next;
+	}
+	head->next = create_list_ant(num, con);
+	return (tmp);
+}
+
+void	printer_ants(t_ant *head)
+{
+	t_ant *tmp;
+
+	tmp = head;
+	if (!tmp)
+	{
+		ft_putendl("(пусто)");
+		return ;
+	}
+	ft_putendl("name\tatstart\tin\tout\tend\n");
+	while (tmp)
+	{
+		if (tmp->name)
+			ft_putstr(tmp->name);
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->atstart));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->in));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->out));
+		ft_putstr("\t");
+		if (tmp->end)
+			ft_putstr(tmp->end);
+		ft_putstr("\n");
+		tmp = tmp->next;
+	}
+}
+
+void	del_list_ant(t_ant **del)
+{
+	ft_memdel((void**)(&(*del)->name));
+	ft_memdel((void**)(&(*del)->end));
+	free(*del);
+}
+
+void	del_ants(t_ant **head)
+{
+	t_ant *tmp;
+
+	if (!(*head))
+		return ;
+	while ((*head))
+	{
+		tmp = (*head)->next;
+		del_list_ant(head);
+		*head = tmp;
+	}
+}
+
+int		check_ants_on_map(t_ant *head)
+{
+	while (head)
+	{
+		if (head->in == 0 || head->out == 0)
+			return (TRUE);
+		head = head->next;
+	}
+	return (FALSE);
+}
+
+void 	printer_tact(t_ant *head, char *room)
+{
+	ft_putstr(head->name);
+	ft_putchar('-');
+	ft_putstr(room);
+	if (head->next && head->next->out != 1)
+		ft_putchar(' ');
+}
+
+void	decrement_ants_for_way(char *s)
+{
+	int n;
+
+	n = ft_atoi(s);
+	if (n > 0)
+	{
+		n--;
+		free(s);
+		s = ft_itoa(n);
+	}
+}
+
+void	visualization(char *tab[START][START], t_ant *head)
+{
+	int i;
+	int j;
+	t_ant *tmp;
+
+	i = 0;
+	j = 1;
+	tmp = head;
+	if (check_ants_on_map(head))
+	{
+		while (tab[i][0] && head)
+		{
+			decrement_ants_for_way(tab[i][0]);
+			printer_tact(head, tab[i][j]);
+			head->in = 1;
+			head = head->next;
+			i++;
+		}
+		ft_putchar('\n');
+		//printer_ants(tmp);
+		//printer_tab(tab);
+		visualization(tab, head);
+	}
+	head = tmp;
+	j++;
+	i = 0;
+	if (check_ants_on_map(head))
+	{
+		while (tab[i][0] && head)
+		{
+			decrement_ants_for_way(tab[i][0]);
+			printer_tact(head, tab[i][j]);
+			head->in = 1;
+			head = head->next;
+			i++;
+		}
+		ft_putchar('\n');
+		//printer_ants(tmp);
+		//printer_tab(tab);
+		visualization(tab, head);
+	}
+}
+
+void	deity(char *tab[START][START], t_const *con)
+{
+	t_ant *head;
+	int i;
+
+	i = 0;
+	head = NULL;
+	while (i < con->ants)
+	{
+		if (!head)
+			head = create_list_ant(i, con);
+		else
+			head = creator_ants(i, con, head);
+		i++;
+	}
+	visualization(tab, head);
+	del_ants(&head);
+}
+
+// void	zero_tab(char *tab[START][START])
 // {
 // 	int i;
 // 	int j;
-// 	t_ant *tmp;
 //
 // 	i = 0;
-// 	j = 1;
-// 	tmp = head;
-// 	if (check_ants_on_map(head))
+// 	while (i < START)
 // 	{
-// 		while (tab[i][0] && head)
+// 		j = 0;
+// 		while (j < START)
 // 		{
-// 			decrement_ants_for_way(tab[i][0]);
-// 			printer_tact(head, tab[i][j]);
-// 			head->in = 1;
-// 			head = head->next;
-// 			i++;
+// 			tab[i][j] = NULL;
+// 			j++;
 // 		}
-// 		ft_putchar('\n');
-// 		//printer_ants(tmp);
-// 		//printer_tab(tab);
-// 		visualization(tab, head);
-// 	}
-// 	head = tmp;
-// 	j++;
-// 	i = 0;
-// 	if (check_ants_on_map(head))
-// 	{
-// 		while (tab[i][0] && head)
-// 		{
-// 			decrement_ants_for_way(tab[i][0]);
-// 			printer_tact(head, tab[i][j]);
-// 			head->in = 1;
-// 			head = head->next;
-// 			i++;
-// 		}
-// 		ft_putchar('\n');
-// 		//printer_ants(tmp);
-// 		//printer_tab(tab);
-// 		visualization(tab, head);
+// 		i++;
 // 	}
 // }
 //
-// void	deity(char *tab[START][START], t_const *con)
+// void 	otsechka(char *(*tab)[START])
 // {
-// 	t_ant *head;
 // 	int i;
 //
 // 	i = 0;
-// 	head = NULL;
-// 	while (i < con->ants)
+//
+// 	while (i < START)
 // 	{
-// 		if (!head)
-// 			head = create_list_ant(i, con);
-// 		else
-// 			head = creator_ants(i, con, head);
+// 		*tab[i] = NULL;
 // 		i++;
 // 	}
-// 	visualization(tab, head);
-// 	del_ants(&head);
+// 	ft_putendl("--");
+// }
+//
+// char	***malloc_bzero_tab(int x, int y)
+// {
+// 	char ***tab;
+// 	int i;
+// 	int j;
+//
+// 	i = 0;
+// 	if (!(tab = (char***)malloc(sizeof(**tab) * (x + 1))))
+// 		return (NULL);
+// 	while (i < x)
+// 	{
+// 		if (!(tab[i] = (char**)malloc(sizeof(*tab) * (y + 1))))
+// 			return (NULL);
+// 		j = 0;
+// 		while (j < y)
+// 		{
+// 			if (!(tab[i][j] = (char*)malloc(sizeof(*tab))))
+// 				return (NULL);
+// 			ft_bzero(tab[i][j], sizeof(*tab));
+// 			j++;
+// 		}
+// 		tab[i][j] = 0;
+// 		i++;
+// 	}
+// 	tab[i] = 0;
+// 	return (tab);
 // }
 
 void	printer_arr_way(t_way *arr[START])
@@ -1549,127 +1787,35 @@ void	capacity(t_way *arr[START])
 	check_sum(arr, 0, arr[0]->len);
 }
 
-int		check_ants_on_map(t_way *arr[START])
-{
-	int i;
-	t_way *tmp;
-
-	i = 0;
-	while (arr[i])
-	{
-		tmp = arr[i];
-		while (tmp)
-		{
-			//printf("%d - %d\n", tmp->ants_way, tmp->num_ant);
-			if (tmp->ants_way != 0 || tmp->num_ant != 0)
-				return (TRUE);
-			tmp = tmp->next;
-		}
-		i++;
-	}
-	return (FALSE);
-}
-
-void	printer_ants(t_way *arr[START])
-{
-	int i;
-	t_way *tmp;
-	char *t;
-
-	i = 0;
-	while (arr[i])
-	{
-		tmp = arr[i];
-		while (tmp)
-		{
-			if (tmp->num_ant != 0)
-			{
-				t = ft_itoa(tmp->num_ant);
-				ft_putchar('L');
-				ft_putstr(t);
-				ft_putchar('-');
-				ft_putstr(tmp->name);
-				ft_putchar(' ');
-				free(t);
-			}
-			tmp = tmp->next;
-		}
-		i++;
-	}
-	ft_putchar('\n');
-}
-
-void	tact(t_way *arr[START])
-{
-	int i;
-	t_way *tmp;
-	int t1;
-	int t2;
-
-	i = 0;
-	while (arr[i])
-	{
-		tmp = arr[i];
-		t1 = 0;
-		t2 = 0;
-		while (tmp)
-		{
-			t1 = tmp->num_ant;
-			tmp->num_ant = t2;
-			t2 = t1;
-			tmp = tmp->next;
-		}
-		i++;
-	}
-}
-
-void	horde_is_coming(t_way *arr[START])
-{
-	int num;
-	int i;
-
-	num = 1;
-
-	while (check_ants_on_map(arr))
-	{
-		i = 0;
-		while (arr[i] && num <= arr[i]->ants)
-		{
-			if (arr[i]->ants_way > 0)
-			{
-				arr[i]->num_ant = num;
-				arr[i]->ants_way--;
-				num++;
-			}
-			i++;
-		}
-		printer_ants(arr);
-		tact(arr);
-	}
-}
-
 void	solution(char **s, t_const *list)
 {
 	t_mod	*head;
+	//char	*tab[START][START];
 	int		i;
 	t_way	*h;
 	t_way	*arr[START];
 
 	i = 0;
+	//zero_tab(tab);
 	while (s[i])
 	{
 		head = split_way(s[i], list);
 		h = build_way_head(head, list);
 		h = build_way(h, head, list);
 		arr[i] = h;
+		//build_tab(tab[i], h);
 		//printer_mod(head);
 		del_roll_mod(&head);
 		i++;
 	}
 	capacity(arr);
-	horde_is_coming(arr); //--------------------------------start
-	//printer_arr_way(arr);
+	printer_arr_way(arr);
 	del_arr_way(arr);
+	//otsechka(&tab[i]);
+	//capacity(tab, list->ants);
+	//deity(tab, list); //----------------------------создаем список муравьев
+	//printer_tab(tab);
+	//del_tab(tab);
 }
 
 void	modify(t_const *list, t_val *map)
