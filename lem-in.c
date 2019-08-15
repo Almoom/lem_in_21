@@ -480,7 +480,7 @@ int		checker(t_val *head)
 	return (TRUE);
 }
 
-t_mod		*create_list_mod(t_const *con, t_val *map)
+t_mod	*create_list_mod(t_const *con, t_val *map)
 {
 	t_mod *list;
 
@@ -489,8 +489,16 @@ t_mod		*create_list_mod(t_const *con, t_val *map)
 	list->next = NULL;
 	list->line = ft_strdup(map->line);
 	list->weight = 1;
-	list->name1 = ft_strdup(map->name1);
-	list->name2 = ft_strdup(map->name2);
+	if (!ft_strcmp(map->name2, con->start) || !ft_strcmp(map->name2, con->end))
+	{
+		list->name1 = ft_strdup(map->name2);
+		list->name2 = ft_strdup(map->name1);
+	}
+	else
+	{
+		list->name1 = ft_strdup(map->name1);
+		list->name2 = ft_strdup(map->name2);
+	}
 	list->c1 = 0;
 	list->c2 = 0;
 	list->loc = 0;
@@ -740,7 +748,21 @@ void	print_simple_solve(t_mod *h)
 	ft_putchar('\n');
 }
 
-void 	start_forward_list(t_mod **head)
+// void	forward_list_add(t_mod **head)
+// {
+// 	char *tmp;
+//
+// 	tmp = (*head)->name1;
+// 	if (!ft_strcmp((*head)->start, (*head)->name1))
+// 		return ;
+// 	else
+// 	{
+// 		(*head)->name1 = (*head)->name2;
+// 		(*head)->name2 = tmp;
+// 	}
+// }
+
+void	forward_list(t_mod **head, char *s)
 {
 	t_mod *tmp_prev;
 	t_mod *oldh;
@@ -749,10 +771,9 @@ void 	start_forward_list(t_mod **head)
 	oldh = *head;
 	while ((*head))
 	{
-		if (!ft_strcmp((*head)->start, (*head)->name1)
-		|| !ft_strcmp((*head)->start, (*head)->name2))
+		if (!ft_strcmp(s, (*head)->name1)
+		|| !ft_strcmp(s, (*head)->name2))
 		{
-
 			tmp_prev->next = NULL;
 			tmp = *head;
 			(*head)->loc = 1;
@@ -767,6 +788,7 @@ void 	start_forward_list(t_mod **head)
 	while (tmp->next)
 		tmp = tmp->next;
 	tmp->next = oldh;
+	//forward_list_add(head);
 }
 
 int		check_unlocal_add(t_mod *tmp)
@@ -883,40 +905,6 @@ int		find_cheap_edge(t_mod *h, char *name)
 	return (min);
 }
 
-void	joiner(t_mod *t, char **way)
-{
-	t->ants = 0;
-	*way = ft_strjoin_free(ft_strjoin_free(*way, "\n", 1, 0), t->line, 1, 0);
-}
-
-int		finder(t_mod *h, t_mod *t, char *from, char **way)
-{
-	int cost;
-
-	cost = find_cheap_edge(h, from);
-	if (!t)
-		finder(h, h, from, way);
-	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
-	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
-	{
-		joiner(t, way);
-		return (0);
-	}
-	else if (!ft_strcmp(t->name1, from) && cost == t->c1 + t->c2 && t->ants)
-	{
-		joiner(t, way);
-		return (finder(h, t->next, t->name2, way));
-	}
-	else if (!ft_strcmp(t->name2, from) && cost == t->c1 + t->c2 && t->ants)
-	{
-		joiner(t, way);
-		return (finder(h, t->next, t->name1, way));
-	}
-	else
-		return (finder(h, t->next, from, way));
-	return (0);
-}
-
 void	devourer_add(t_mod *a, t_mod *b, int flag)
 {
 	while (b)
@@ -1025,60 +1013,6 @@ int		check_dubl_way(t_mod *a, t_mod *b)
 		a = a->next;
 	}
 	return (flag == 0 ? FALSE : TRUE);
-}
-
-void 	separator(t_mod **head, int count, char **hub, t_const *list)
-{
-	char *way;
-
-	way = ft_strnew(0);
-	if ((*head)->c1 > (*head)->c2)
-		finder((*head), (*head), (*head)->name1, &way);
-	else
-		finder((*head), (*head), (*head)->name2, &way);
-	*head = del_deadlock(head);
-	//ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
-	//ft_putendl(way);
-	hub[count] = ft_strdup(way);
-	free((void*)way);
-	if ((*head))
-		killer(head, count, hub, list);
-}
-
-void	killer_add(t_mod **head)
-{
-	while (check_deadlock(*head, *head))
-		*head = del_deadlock(head);
-	if (check_deadlock_start_end(*head, *head))
-		*head = del_deadlock(head);
-	if (ft_strcmp((*head)->start, (*head)->name1)
-	&& ft_strcmp((*head)->start, (*head)->name2))
-		start_forward_list(head);
-	else
-		(*head)->loc = 1;
-	if (check_unlocal(*head, *head))
-		*head = del_deadlock(head);
-}
-
-void	killer(t_mod **head, int count, char **hub, t_const *list)
-{
-	killer_add(head);
-	while (cost_vertex(*head, *head))
-	{
-		while (check_cheap_vertex(*head))
-		{
-			devourer(*head);
-			*head = del_deadlock(head);
-		}
-		if (check_dubl_way(*head, *head))
-			*head = del_deadlock(head);
-		else
-			break ;
-	}
-	printer_mod(*head);
-	ft_putendl("--");
-	if ((*head))
-		separator(head, count + 1, hub, list);
 }
 
 t_mod		*create_list_mod_way(t_const *con, char *s)
@@ -1552,39 +1486,76 @@ void	horde_is_coming(t_way *arr[START])
 	}
 }
 
-int		wide_search(t_mod *h, t_mod *t, char *from, char **way)
+int		check_distance(t_mod *h)
 {
-	if (!t)
-		wide_search(h, h, from, way);
-	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
-	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
+	while (h)
 	{
-		joiner(t, way);
-		return (0);
+		if (h->c1 == 0 || h->c2 == 0)
+			return (TRUE);
+		h = h->next;
 	}
-	else if (!ft_strcmp(t->name1, from) && t->ants)
-	{
-		joiner(t, way);
-		return (wide_search(h, t->next, t->name2, way));
-	}
-	else if (!ft_strcmp(t->name2, from) && t->ants)
-	{
-		joiner(t, way);
-		return (wide_search(h, t->next, t->name1, way));
-	}
-	else
-		return (wide_search(h, t->next, from, way));
-	return (0);
+	return (FALSE);
 }
 
-t_way 	*simple_search(t_const *list, t_val *map)
+int		check_end(t_mod *h)
 {
-	t_way	*h;
+
+	while (h)
+	{
+		if ((!ft_strcmp(h->name1, h->end) && h->c1 != 0) || (!ft_strcmp(h->name2, h->end) && h->c2 != 0))
+			return (TRUE);
+		h = h->next;
+	}
+	return (FALSE);
+}
+
+void	repeater(t_mod *h, char *from, int pred)
+{
+	while (h)
+	{
+		if (!ft_strcmp(h->name1, from) && (h->c1 == 0 || h->c1 > pred))
+			h->c1 = pred;
+		if (!ft_strcmp(h->name2, from) && (h->c2 == 0 || h->c2 > pred))
+			h->c2 = pred;
+		h = h->next;
+	}
+}
+
+void	wave(t_mod *h, int pred)
+{
+	t_mod *tmp;
+
+	tmp = h;
+	while (h)
+	{
+		if (h->c1 == pred && (h->c2 == 0 || h->c2 > pred + 1))
+		{
+			h->c2 = pred + 1;
+			repeater(tmp, h->name2, h->c2);
+		}
+		else if (h->c2 == pred && (h->c1 == 0 || h->c1 > pred + 1))
+		{
+			h->c1 = pred + 1;
+			repeater(tmp, h->name1, h->c1);
+		}
+		h = h->next;
+	}
+}
+
+void	wide_search(t_mod *h, t_mod *t, char *from, int pred)
+{
+	while (check_distance(h))
+	{
+		wave(h, pred);
+		pred++;
+	}
+}
+
+t_mod	*val_to_mod(t_const *list, t_val *map)
+{
 	t_mod	*head;
-	char	*way;
 
 	head = NULL;
-	way = ft_strnew(0);
 	while (map)
 	{
 		if (!head && ft_strcmp(map->name1, map->name2))
@@ -1593,13 +1564,88 @@ t_way 	*simple_search(t_const *list, t_val *map)
 			head = creator_mod(list, map, head);
 		map = map->next;
 	}
-	killer_add(&head);
-	// printer_mod(head);
-	// ft_putendl("--");
-	wide_search(head, head, !ft_strcmp(head->name1, head->start) ? head->name1 : head->name2, &way);
-	ft_putendl(way);
-	ft_putendl("---");
-	return (NULL);
+	return (head);
+}
+
+int		check_long_way(t_mod *h, int end)
+{
+	int flag;
+
+	flag = 0;
+	while (h)
+	{
+		if ((h->c1 > end || h->c2 > end) || (h->c1 == end && h->c2 == end))
+		{
+			flag = 1;
+			h->ants = 0;
+		}
+		h = h->next;
+	}
+	return (flag == 1 ? TRUE : FALSE);
+}
+
+int		length_short_way(t_mod *h)
+{
+	while (h)
+	{
+		if (!ft_strcmp(h->name1, h->end))
+			return (h->c1);
+		if (!ft_strcmp(h->name2, h->end))
+			return (h->c2);
+		h = h->next;
+	}
+	return (0);
+}
+
+void	search_from_end(t_mod *h, t_mod *t, char *from, char **way)
+{
+	if (!t)
+		search_from_end(h, h, from, way);
+	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->start))
+	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->start)))
+	{
+		joiner(t, way);
+		return ;
+	}
+	else if (!ft_strcmp(t->name1, from))
+	{
+		joiner(t, way);
+		return (search_from_end(h, t->next, t->name2, way));
+	}
+	else if (!ft_strcmp(t->name2, from))
+	{
+		joiner(t, way);
+		return (search_from_end(h, t->next, t->name1, way));
+	}
+	else
+		return (search_from_end(h, t->next, from, way));
+}
+
+t_way	*simple_search(t_const *list, t_val *map)
+{
+	t_way	*h;
+	t_mod	*head;
+	char	*way;
+
+	head = val_to_mod(list, map);
+	way = ft_strnew(0);
+	killer_add(&head, list);
+	head->c1 = 1;
+	repeater(head, head->start, head->c1);
+	wide_search((head), (head), (head)->name1, head->c1);
+	if (check_long_way(head, length_short_way(head)))
+		head = del_deadlock(&head);
+	forward_list(&head, list->end);
+	search_from_end(head, head, head->name1, &way);
+	//printer_mod(head);
+	del_roll_mod(&head);
+	//ft_putendl(way);
+	head = split_way(way, list);
+	h = build_way_head(head, list);
+	h = build_way(h, head, list);
+	free(way);
+	del_roll_mod(&head);
+	return (h);
 }
 
 void	solution(char **s, t_const *list, t_val *old)
@@ -1610,10 +1656,10 @@ void	solution(char **s, t_const *list, t_val *old)
 	t_way	*arr[START];
 
 	i = 0;
-	if (!s[1])
-		h = simple_search(list, old); //--------ищем кратчайший путь тк он всего один
-	else
-	{
+	// if (!s[1])
+	// 	arr[0] = simple_search(list, old);//--????--ищем кратчайший путь тк он всего один
+	// else
+	// {
 		while (s[i])
 		{
 			head = split_way(s[i], list);
@@ -1624,11 +1670,104 @@ void	solution(char **s, t_const *list, t_val *old)
 			del_roll_mod(&head);
 			i++;
 		}
-	}
-	capacity(arr, i);
+	//}
+	capacity(arr, i == 0 ? i + 1 : i);
 	horde_is_coming(arr); //--------------------------------start
 	//printer_arr_way(arr);
 	del_arr_way(arr);
+}
+
+void	joiner(t_mod *t, char **way)
+{
+	t->ants = 0;
+	*way = ft_strjoin_free(ft_strjoin_free(*way, "\n", 1, 0), t->line, 1, 0);
+}
+
+int		finder(t_mod *h, t_mod *t, char *from, char **way)
+{
+	int cost;
+
+	//ft_putendl(from);
+	cost = find_cheap_edge(h, from);
+	if (!t)
+		finder(h, h, from, way);
+	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
+	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
+	{
+		joiner(t, way);
+		return (0);
+	}
+	else if (!ft_strcmp(t->name1, from) && cost == t->c1 + t->c2 && t->ants)
+	{
+		joiner(t, way);
+		return (finder(h, t->next, t->name2, way));
+	}
+	else if (!ft_strcmp(t->name2, from) && cost == t->c1 + t->c2 && t->ants)
+	{
+		joiner(t, way);
+		return (finder(h, t->next, t->name1, way));
+	}
+	else
+		return (finder(h, t->next, from, way));
+	return (0);
+}
+
+void 	separator(t_mod **head, int count, char **hub, t_const *list)
+{
+	char *way;
+
+	way = ft_strnew(0);
+	if ((*head)->c1 > (*head)->c2)
+		finder((*head), (*head), (*head)->name1, &way);
+	else
+		finder((*head), (*head), (*head)->name2, &way);
+	*head = del_deadlock(head);
+	//ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
+	//ft_putendl(way);
+	hub[count] = ft_strdup(way);
+	free((void*)way);
+	if ((*head))
+		killer(head, count, hub, list);
+}
+
+void	killer_add(t_mod **head, t_const *list)
+{
+	while (check_deadlock(*head, *head))
+		*head = del_deadlock(head);
+	if (check_deadlock_start_end(*head, *head))
+		*head = del_deadlock(head);
+	if (ft_strcmp((*head)->start, (*head)->name1)
+	&& ft_strcmp((*head)->start, (*head)->name2))
+		forward_list(head, list->start);
+	else
+		(*head)->loc = 1;
+	if (check_unlocal(*head, *head))
+		*head = del_deadlock(head);
+}
+
+void	killer(t_mod **head, int count, char **hub, t_const *list)
+{
+	printer_mod(*head);
+	ft_putendl("one");
+	killer_add(head, list);
+	//ft_putendl("two");
+	while (cost_vertex(*head, *head))
+	{
+		while (check_cheap_vertex(*head))
+		{
+			devourer(*head);
+			*head = del_deadlock(head);
+		}
+		if (check_dubl_way(*head, *head))
+			*head = del_deadlock(head);
+		else
+			break ;
+	}
+	//ft_putendl("three");
+	// printer_mod(*head);
+	// ft_putendl("--");
+	if ((*head))
+		separator(head, count + 1, hub, list);
 }
 
 void	modify(t_const *list, t_val *map)
@@ -1636,27 +1775,18 @@ void	modify(t_const *list, t_val *map)
 	t_mod *head;
 	int count;
 	char *hub[START];
-	t_val *tmp;
 
 	count = -1;
-	head = NULL;
 	ft_bzero(hub, START);
 	if (!(map = scrolling_valid(map)))
 		return ;
-	tmp = map;
-	while (map)
-	{
-		if (!head && ft_strcmp(map->name1, map->name2))
-			head = create_list_mod(list, map);
-		else if (head && ft_strcmp(map->name1, map->name2))
-			head = creator_mod(list, map, head);
-		map = map->next;
-	}
+	//printer_valid(map);
+	head = val_to_mod(list, map);
 	if (simple_solve(head))
 		print_simple_solve(head); //-------------- визуал для случая start-end
 	else
 		killer(&head, count, hub, list);//----- рекурсивно формируем хаб путей
-	solution(hub, list, tmp);//---------------------расшифровка хаба путей в таблицу
+	solution(hub, list, map);//---------------------расшифровка хаба путей в таблицу
 	del_hub(hub);
 	del_roll_mod(&head);
 }

@@ -82,4 +82,6 @@ typedef struct		s_way
 void				del_list_valid(t_val **del);
 void				killer(t_mod **head, int count, char **hub, t_const *list);
 void				del_hub(char **hub);
+void				killer_add(t_mod **head, t_const *list);
+void				joiner(t_mod *t, char **way);
 #endif
