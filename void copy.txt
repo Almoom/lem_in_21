@@ -1,0 +1,4 @@
+Buo2-Eq_9	1	Buo2	3	Eq_9	4	1	282	Cgw7	Gbs0
+Buo2-Hba3
+Ckb8-Hba3	2	Buo2	3	Ckb8	4	1	282	Cgw7	Gbs0
+Buo2-Spg4	1	Buo2	3	Spg4	3	1	282	Cgw7	Gbs0

@@ -890,21 +890,6 @@ int		cost_vertex(t_mod *a, t_mod *b)
 	return (FALSE);
 }
 
-int		find_cheap_edge(t_mod *h, char *name)
-{
-	int min;
-
-	min = h->c1 + h->c2;
-	while (h)
-	{
-		if ((!ft_strcmp(h->name1, name) || !ft_strcmp(h->name2, name))
-		&& h->ants)
-			min = min > h->c1 + h->c2 ? h->c1 + h->c2 : min;
-		h = h->next;
-	}
-	return (min);
-}
-
 void	devourer_add(t_mod *a, t_mod *b, int flag)
 {
 	while (b)
@@ -1599,6 +1584,7 @@ int		length_short_way(t_mod *h)
 
 void	search_from_end(t_mod *h, t_mod *t, char *from, char **way)
 {
+	//ft_putendl(*way);
 	if (!t)
 		search_from_end(h, h, from, way);
 	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->start))
@@ -1607,12 +1593,12 @@ void	search_from_end(t_mod *h, t_mod *t, char *from, char **way)
 		joiner(t, way);
 		return ;
 	}
-	else if (!ft_strcmp(t->name1, from))
+	else if (!ft_strcmp(t->name1, from) && t->c1 > t->c2)
 	{
 		joiner(t, way);
 		return (search_from_end(h, t->next, t->name2, way));
 	}
-	else if (!ft_strcmp(t->name2, from))
+	else if (!ft_strcmp(t->name2, from) && t->c2 > t->c1)
 	{
 		joiner(t, way);
 		return (search_from_end(h, t->next, t->name1, way));
@@ -1633,6 +1619,7 @@ t_way	*simple_search(t_const *list, t_val *map)
 	head->c1 = 1;
 	repeater(head, head->start, head->c1);
 	wide_search((head), (head), (head)->name1, head->c1);
+	//printer_mod(head);
 	if (check_long_way(head, length_short_way(head)))
 		head = del_deadlock(&head);
 	forward_list(&head, list->end);
@@ -1683,19 +1670,53 @@ void	joiner(t_mod *t, char **way)
 	*way = ft_strjoin_free(ft_strjoin_free(*way, "\n", 1, 0), t->line, 1, 0);
 }
 
-int		finder(t_mod *h, t_mod *t, char *from, char **way)
+int		find_cheap_edge(t_mod *h, char *from)
+{
+	int min;
+	int flag;
+
+	min = h->c1 + h->c2;
+	//ft_putendl(ft_itoa(min));
+	//printer_mod(h);
+	while (h)
+	{
+		if ((!ft_strcmp(h->name1, from) || !ft_strcmp(h->name2, from))
+		&& h->ants && min >= h->c1 + h->c2)
+		{
+			min =  h->c1 + h->c2;
+			flag = 1;
+		}
+		h = h->next;
+	}
+	return (flag == 1 ? min : 0);
+}
+
+void	kill_loop(t_mod **h, char *s)
+{
+
+}
+
+int		finder(t_mod **h, t_mod *t, char *from, char **way)
 {
 	int cost;
 
-	//ft_putendl(from);
-	cost = find_cheap_edge(h, from);
+	cost = find_cheap_edge(*h, from);
+	//printer_mod(h);
+	if (cost == 0) ////--------------------петля
+	{
+		//joiner(t, way);
+		kill_loop(h, *way);
+		ft_putendl(*way);
+		ft_putendl("----");
+		return (TRUE);
+	}
 	if (!t)
-		finder(h, h, from, way);
+		finder(h, *h, from, way);
 	else if ((!ft_strcmp(t->name1, from) && !ft_strcmp(t->name2, t->end))
 	|| (!ft_strcmp(t->name2, from) && !ft_strcmp(t->name1, t->end)))
 	{
 		joiner(t, way);
-		return (0);
+		return (FALSE);
 	}
 	else if (!ft_strcmp(t->name1, from) && cost == t->c1 + t->c2 && t->ants)
 	{
@@ -1709,22 +1730,37 @@ int		finder(t_mod *h, t_mod *t, char *from, char **way)
 	}
 	else
 		return (finder(h, t->next, from, way));
-	return (0);
+	return (FALSE);
 }
 
-void 	separator(t_mod **head, int count, char **hub, t_const *list)
+void	separator(t_mod **head, int count, char **hub, t_const *list)
 {
 	char *way;
+	int loop;
 
 	way = ft_strnew(0);
 	if ((*head)->c1 > (*head)->c2)
-		finder((*head), (*head), (*head)->name1, &way);
+		loop = finder((head), (*head), (*head)->name1, &way);
 	else
-		finder((*head), (*head), (*head)->name2, &way);
-	*head = del_deadlock(head);
+		loop = finder((head), (*head), (*head)->name2, &way);
+	if (loop)
+	{
+		ft_putendl(way);
+	}
+	else
+	{
+		*head = del_deadlock(head);
+		hub[count] = ft_strdup(way);
+	}
+	// int i = -1;
+	// while (hub[++i])
+	// 	ft_putendl(hub[i]);
+
+	// printer_mod(*head);
+	// ft_putendl("--");
 	//ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
 	//ft_putendl(way);
-	hub[count] = ft_strdup(way);
+
 	free((void*)way);
 	if ((*head))
 		killer(head, count, hub, list);
@@ -1747,10 +1783,10 @@ void	killer_add(t_mod **head, t_const *list)
 
 void	killer(t_mod **head, int count, char **hub, t_const *list)
 {
-	printer_mod(*head);
-	ft_putendl("one");
+	//printer_mod(*head);
+	//ft_putendl("--one--");
 	killer_add(head, list);
-	//ft_putendl("two");
+	//ft_putendl("--two--");
 	while (cost_vertex(*head, *head))
 	{
 		while (check_cheap_vertex(*head))
@@ -1763,7 +1799,7 @@ void	killer(t_mod **head, int count, char **hub, t_const *list)
 		else
 			break ;
 	}
-	//ft_putendl("three");
+	//ft_putendl("--three--");
 	// printer_mod(*head);
 	// ft_putendl("--");
 	if ((*head))
@@ -1786,7 +1822,7 @@ void	modify(t_const *list, t_val *map)
 		print_simple_solve(head); //-------------- визуал для случая start-end
 	else
 		killer(&head, count, hub, list);//----- рекурсивно формируем хаб путей
-	solution(hub, list, map);//---------------------расшифровка хаба путей в таблицу
+	solution(hub, list, map);//----------------расшифровка хаба путей в таблицу
 	del_hub(hub);
 	del_roll_mod(&head);
 }

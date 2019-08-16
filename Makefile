@@ -15,7 +15,7 @@ NAME = lem-in
 SRC = lem-in.c
 
 make:
-	@$(CC) -o $(NAME) $(SRC) /Users/ljalikak/Documents/push_swap_21/libft/libft.a
+	@$(CC) -g -o $(NAME) $(SRC) /Users/ljalikak/Documents/push_swap_21/libft/libft.a
 
 clean:
 	@rm -f /Users/ljalikak/Documents/push_swap_21/libft/*.o
