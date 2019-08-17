@@ -62,7 +62,7 @@ void	printer_mod(t_mod *head)
 		ft_putendl("(пусто)");
 		return ;
 	}
-	ft_putendl("line\t\tw\tname1\tc1\tname2\tc2\tloc\tants\tstart\tend\n");
+	ft_putendl("line\tw\tname1\tc1\tname2\tc2\tloc\tloop\tants\tstart\tend\n");
 	while (tmp)
 	{
 		if (tmp->line)
@@ -81,6 +81,8 @@ void	printer_mod(t_mod *head)
 		ft_putstr(ft_itoa(tmp->c2));
 		ft_putstr("\t");
 		ft_putstr(ft_itoa(tmp->loc));
+		ft_putstr("\t");
+		ft_putstr(ft_itoa(tmp->loop));
 		ft_putstr("\t");
 		ft_putstr(ft_itoa(tmp->ants));
 		ft_putstr("\t");
@@ -502,6 +504,7 @@ t_mod	*create_list_mod(t_const *con, t_val *map)
 	list->c1 = 0;
 	list->c2 = 0;
 	list->loc = 0;
+	list->loop = 0;
 	list->ants = con->ants;
 	list->start = ft_strdup(con->start);
 	list->end = ft_strdup(con->end);
@@ -702,14 +705,12 @@ int		check_deadlock_start_end(t_mod *a, t_mod *b)
 		return (FALSE);
 	while (a)
 	{
-		if (!ft_strcmp(a->start, a->name1) || !ft_strcmp(a->start, a->name2)
-		|| !ft_strcmp(a->end, a->name1) || !ft_strcmp(a->end, a->name2))
+		if ((!ft_strcmp(a->start, a->name1) || !ft_strcmp(a->start, a->name2)
+		|| !ft_strcmp(a->end, a->name1) || !ft_strcmp(a->end, a->name2)) &&
+		check_deadlock_start_end_add(a, b) != 1)
 		{
-			if (check_deadlock_start_end_add(a, b) != 1)
-			{
-				a->ants = 0;
-				flag = 1;
-			}
+			a->ants = 0;
+			flag = 1;
 		}
 		a = a->next;
 	}
@@ -771,8 +772,8 @@ void	forward_list(t_mod **head, char *s)
 	oldh = *head;
 	while ((*head))
 	{
-		if (!ft_strcmp(s, (*head)->name1)
-		|| !ft_strcmp(s, (*head)->name2))
+		if ((!ft_strcmp(s, (*head)->name1)
+		|| !ft_strcmp(s, (*head)->name2)) && (*head)->ants != 0)
 		{
 			tmp_prev->next = NULL;
 			tmp = *head;
@@ -1232,15 +1233,15 @@ void	del_tab(char *tab[START][START])
 	}
 }
 
-t_const	*create_list_const(void)
+t_const	*create_list_const(int ants, char *start, char *end)
 {
 	t_const *list;
 
 	if (!(list = (t_const*)malloc(sizeof(*list))))
 		return (NULL);
-	list->ants = 0;
-	list->start = NULL;
-	list->end = NULL;
+	list->ants = ants;
+	list->start = start ? ft_strdup(start) : NULL;
+	list->end = end ? ft_strdup(end) : NULL;
 	return (list);
 }
 
@@ -1658,6 +1659,7 @@ void	solution(char **s, t_const *list, t_val *old)
 			i++;
 		}
 	//}
+	check_way(arr);
 	capacity(arr, i == 0 ? i + 1 : i);
 	horde_is_coming(arr); //--------------------------------start
 	//printer_arr_way(arr);
@@ -1691,9 +1693,144 @@ int		find_cheap_edge(t_mod *h, char *from)
 	return (flag == 1 ? min : 0);
 }
 
-void	kill_loop(t_mod **h, char *s)
+int		numbers_ants(t_mod *h)
 {
+	int n;
 
+	n = 0;
+	while (h)
+	{
+		if (h->ants > n)
+		{
+			n = h->ants;
+			return (n);
+		}
+		h = h->next;
+	}
+	return (n);
+}
+
+void	recovery_index(t_mod *h, int ants)
+{
+	while (h)
+	{
+		if (h->ants == 0)
+		{
+			h->ants = ants;
+			h->loop = 1;
+		}
+		h = h->next;
+	}
+}
+
+void	find_ring(t_mod *a, t_mod *b)
+{
+	t_mod *tmp;
+	int flag1;
+	int flag2;
+
+	flag1 = 0;
+	flag2 = 0;
+	tmp = b;
+	while (a)
+	{
+		while (b)
+		{
+			if (a != b && a->loop == 1 && b->loop == 1 &&
+			(!ft_strcmp(a->name1, b->name1) || !ft_strcmp(a->name1, b->name2)))
+				flag1 = 1;
+			if (a != b && a->loop == 1 && b->loop == 1 &&
+			(!ft_strcmp(a->name2, b->name1) || !ft_strcmp(a->name2, b->name2)))
+				flag2 = 1;
+			b = b->next;
+		}
+		if (flag1 + flag2 != 2)
+			a->loop = 0;
+		b = tmp;
+		a = a->next;
+	}
+}
+
+void	marker_ring(t_mod *h)
+{
+	while (h)
+	{
+		if (h->loop == 1)
+		{
+			h->loop = 0;
+			h->ants = 0;
+		}
+		h = h->next;
+	}
+}
+
+int		check_valid_start_end(t_mod *h)
+{
+	int flag1;
+	int flag2;
+
+	flag1 = 0;
+	flag2 = 0;
+	while (h)
+	{
+		if (h->ants != 0 && !ft_strcmp(h->name1, h->start)
+		&& !ft_strcmp(h->name2, h->end))
+			return (TRUE);
+		if (h->ants != 0 && !ft_strcmp(h->name2, h->start)
+		&& !ft_strcmp(h->name1, h->end))
+			return (TRUE);
+		if (h->ants != 0 && !ft_strcmp(h->name1, h->start)
+		&& ft_strcmp(h->name2, h->end))
+			flag1 = 1;
+		if (h->ants != 0 && !ft_strcmp(h->name1, h->end)
+		&& ft_strcmp(h->name2, h->start))
+			flag2 = 1;
+		h = h->next;
+	}
+	return (flag1 + flag2 == 2 ? TRUE : FALSE);
+}
+
+void	kill_loop(t_mod **h)
+{
+	recovery_index(*h, numbers_ants(*h));
+	find_ring(*h, *h);
+	marker_ring(*h);
+
+	//if (check_valid_start_end(*h))
+	*h = del_deadlock(h);
+
+	//ft_putendl("==");
+	killer_add(h, create_list_const((*h)->ants, (*h)->start, (*h)->end));
+	//printer_mod(*h);
+	// else
+	// 	del_roll_mod(h);
+
+	//
+	// 	;
+	// if ((*h)->ants == 0)
+	// 	forward_list(h, (*h)->start);
+	//
+	// 	*h = del_deadlock(h);
+
+	//printer_mod(*h);
+	//вычленяем петлю
+	//удаляем связи петли
+	//сдвигаем на новый старт
+}
+
+int		check_way(t_mod *h)
+{
+	int flag;
+
+	flag = 0;
+	while (h)
+	{
+		if (h->ants != 0 && !ft_strcmp(h->name1, h->start)
+		&& !ft_strcmp(h->name2, h->end))
+			flag = 1;
+		h = h->next;
+	}
+	return (flag == 1 ? TRUE : FALSE);
 }
 
 int		finder(t_mod **h, t_mod *t, char *from, char **way)
@@ -1701,13 +1838,11 @@ int		finder(t_mod **h, t_mod *t, char *from, char **way)
 	int cost;
 
 	cost = find_cheap_edge(*h, from);
-	//printer_mod(h);
-	if (cost == 0) ////--------------------петля
+	if (/*!check_way(*h) &&*/ cost == 0) ////--------------------петля
 	{
-		//joiner(t, way);
-		kill_loop(h, *way);
-		ft_putendl(*way);
-		ft_putendl("----");
+		kill_loop(h);
+		//ft_putendl(*way);
+		//ft_putendl("----");
 		return (TRUE);
 	}
 	if (!t)
@@ -1739,44 +1874,68 @@ void	separator(t_mod **head, int count, char **hub, t_const *list)
 	int loop;
 
 	way = ft_strnew(0);
-	if ((*head)->c1 > (*head)->c2)
-		loop = finder((head), (*head), (*head)->name1, &way);
-	else
-		loop = finder((head), (*head), (*head)->name2, &way);
-	if (loop)
+	loop = 0;
+	if ((*head)->next)
 	{
-		ft_putendl(way);
+		if ((*head)->c1 > (*head)->c2)
+			loop = finder((head), (*head), (*head)->name1, &way);
+		else
+			loop = finder((head), (*head), (*head)->name2, &way);
+		if (!loop)
+		{
+			*head = del_deadlock(head);
+			hub[count] = ft_strdup(way);
+		}
 	}
 	else
-	{
-		*head = del_deadlock(head);
-		hub[count] = ft_strdup(way);
-	}
-	// int i = -1;
-	// while (hub[++i])
-	// 	ft_putendl(hub[i]);
+		hub[count] = ft_strdup((*head)->line);
+
+
 
 	// printer_mod(*head);
-	// ft_putendl("--");
+	// ft_putendl("-------");
 	//ft_putendl(ft_itoa(count)); //утечка 4 б в итоа
 	//ft_putendl(way);
-
 	free((void*)way);
-	if ((*head))
+
+	if ((*head) && check_valid_start_end(*head)) //+проверка на наличие хотябы одного начала и конца///////////////////////
 		killer(head, count, hub, list);
+}
+
+void	recovery_index_start_end(t_mod *h, t_const *list)
+{
+	while (h)
+	{
+		if ((!ft_strcmp(h->start, h->name1) && ft_strcmp(h->end, h->name2))
+		|| (!ft_strcmp(h->start, h->name2) && ft_strcmp(h->end, h->name1)))
+			h->ants = list->ants;
+		h = h->next;
+	}
 }
 
 void	killer_add(t_mod **head, t_const *list)
 {
+
 	while (check_deadlock(*head, *head))
 		*head = del_deadlock(head);
+
 	if (check_deadlock_start_end(*head, *head))
+	{
+		//recovery_index_start_end(*head, list);
 		*head = del_deadlock(head);
-	if (ft_strcmp((*head)->start, (*head)->name1)
-	&& ft_strcmp((*head)->start, (*head)->name2))
-		forward_list(head, list->start);
-	else
-		(*head)->loc = 1;
+	}
+
+	if ((*head))
+	{
+		if (ft_strcmp((*head)->start, (*head)->name1)
+		&& ft_strcmp((*head)->start, (*head)->name2))
+			forward_list(head, list->start);
+		else
+			(*head)->loc = 1;
+	}
+
+
+
 	if (check_unlocal(*head, *head))
 		*head = del_deadlock(head);
 }
@@ -1786,7 +1945,8 @@ void	killer(t_mod **head, int count, char **hub, t_const *list)
 	//printer_mod(*head);
 	//ft_putendl("--one--");
 	killer_add(head, list);
-	//ft_putendl("--two--");
+	// printer_mod(*head);
+	// ft_putendl("--two--");
 	while (cost_vertex(*head, *head))
 	{
 		while (check_cheap_vertex(*head))
@@ -1802,7 +1962,7 @@ void	killer(t_mod **head, int count, char **hub, t_const *list)
 	//ft_putendl("--three--");
 	// printer_mod(*head);
 	// ft_putendl("--");
-	if ((*head))
+	if ((*head))// && check_valid_start_end(*head))  //+проверка на наличие хотябы одного начала и конца///////////////////////
 		separator(head, count + 1, hub, list);
 }
 
@@ -1822,7 +1982,15 @@ void	modify(t_const *list, t_val *map)
 		print_simple_solve(head); //-------------- визуал для случая start-end
 	else
 		killer(&head, count, hub, list);//----- рекурсивно формируем хаб путей
-	solution(hub, list, map);//----------------расшифровка хаба путей в таблицу
+
+	int i = -1;
+	while (hub[++i])
+	{
+		ft_putendl(ft_itoa(i));
+		ft_putendl(hub[i]);
+	}
+
+	solution(hub, list, map);//----------------расшифровка хаба путей
 	del_hub(hub);
 	del_roll_mod(&head);
 }
@@ -1833,7 +2001,7 @@ void	read_const(t_val *map)
 	t_const *list;
 
 	h = map;
-	if (!(list = create_list_const()))
+	if (!(list = create_list_const(0, NULL, NULL)))
 		return ;
 	while (map)
 	{

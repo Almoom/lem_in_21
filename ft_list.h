@@ -46,6 +46,7 @@ typedef struct		s_mod
 	int				c1;
 	int				c2;
 	int				loc;
+	int				loop;
 	int				ants;
 	char			*start;
 	char			*end;
