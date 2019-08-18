@@ -12,46 +12,6 @@
 
 #include "ft_list.h"
 
-void	printer_valid(t_val *head)
-{
-	t_val *tmp;
-
-	tmp = head;
-	if (!tmp)
-	{
-		ft_putendl("(пусто)");
-		return ;
-	}
-	while (tmp)
-	{
-		ft_putstr(ft_itoa(tmp->isnum));
-		ft_putstr("\t");
-		ft_putstr(ft_itoa(tmp->isstart));
-		ft_putstr("\t");
-		ft_putstr(ft_itoa(tmp->isend));
-		ft_putstr("\t");
-		ft_putstr(ft_itoa(tmp->isxy));
-		ft_putstr("\t");
-		ft_putstr(ft_itoa(tmp->isedge));
-		ft_putstr("\t");
-		if (tmp->name)
-			ft_putstr(tmp->name);
-		ft_putstr("\t");
-		if (tmp->x_y)
-			ft_putstr(tmp->x_y);
-		ft_putstr("\t");
-		if (tmp->name1)
-			ft_putstr(tmp->name1);
-		ft_putstr("\t");
-		if (tmp->name2)
-			ft_putstr(tmp->name2);
-		ft_putstr("\t");
-		if (tmp->line)
-			ft_putendl(tmp->line);
-		tmp = tmp->next;
-	}
-}
-
 void	printer_mod(t_mod *head)
 {
 	t_mod *tmp;
@@ -130,358 +90,6 @@ void	printer_way(t_way *head)
 	}
 }
 
-t_val	*create_list_valid(char *s)
-{
-	t_val *list;
-
-	if (!(list = (t_val*)malloc(sizeof(*list))))
-		return (NULL);
-	list->next = NULL;
-	list->line = ft_strdup(s);
-	list->name = NULL;
-	list->x_y = NULL;
-	list->name1 = NULL;
-	list->name2 = NULL;
-	list->isnum = 0;
-	list->isstart = 0;
-	list->isend = 0;
-	list->isxy = 0;
-	list->isedge = 0;
-	return (list);
-}
-
-int		not_comment(char *s)
-{
-	if (s[0] == '#' && s[1] != '#')
-		return (FALSE);
-	if (s[0] == '#' && s[1] == '#')
-	{
-		if (!ft_strcmp(s, "##start") || !ft_strcmp(s, "##end"))
-			return (TRUE);
-		else
-			return (FALSE);
-	}
-	return (TRUE);
-}
-
-int		check_realnum_add(char *s, int n, int len)
-{
-	int i;
-
-	i = 0;
-	while (i < n)
-	{
-		s++;
-		i++;
-	}
-	if (len < 10)
-		return (TRUE);
-	if (len == 10 && ft_strcmp(s, "2147483647") <= 0)
-		return (TRUE);
-	return (FALSE);
-}
-
-int		check_realnum(char *s)
-{
-	int i;
-	int j;
-	int flag;
-
-	i = -1;
-	j = 0;
-	flag = 0;
-	while (s[++i])
-	{
-		if (i == 0 && s[i] == '-')
-			return (FALSE);
-		if (i == 0 && s[i] == '+')
-			i++;
-		if (!s[i] || !ft_isdigit(s[i]))
-			return (FALSE);
-		while (s[i] == '0' && flag == 0)
-			i++;
-		if (!s[i])
-			return (TRUE);
-		if (!ft_isdigit(s[i]))
-			return (FALSE);
-		if (ft_isdigit(s[i]) && j++ <= i)
-			flag = 1;
-	}
-	return (check_realnum_add(s, i - j, j));
-}
-
-t_val	*creator_valid(t_val *head, char *s)
-{
-	t_val *tmp;
-
-	tmp = head;
-	while (head->next)
-	{
-		head = head->next;
-	}
-	head->next = create_list_valid(s);
-	return (tmp);
-}
-
-void	del_roll_valid(t_val **head)
-{
-	t_val *tmp;
-
-	if (!(*head))
-		return ;
-	while ((*head))
-	{
-		tmp = (*head)->next;
-		del_list_valid(head);
-		*head = tmp;
-	}
-}
-
-int		num_w(char **av)
-{
-	int i;
-
-	i = 0;
-	while (av[i])
-		i++;
-	return (i);
-}
-
-void	del_split(char **s)
-{
-	int i;
-
-	i = 0;
-	while (s[i])
-	{
-		free(s[i]);
-		i++;
-	}
-	free(s);
-}
-
-int		num_c(char *s, int ch)
-{
-	int i;
-	int count;
-
-	i = 0;
-	count = 0;
-	while (s[i])
-	{
-		if (s[i] == ch)
-			count++;
-		i++;
-	}
-	return (count);
-}
-
-void	check_edge(t_val *head)
-{
-	t_val	*tmp;
-	char	**av;
-
-	if (!head)
-		return ;
-	tmp = head;
-	while (tmp->next)
-	{
-		av = ft_strsplit(tmp->line, '-');
-		if (num_w(av) == 2 && num_c(tmp->line, '-') == 1)
-			tmp->isedge = 1;
-		else
-		{
-			del_split(av);
-			return ;
-		}
-		del_split(av);
-		tmp = tmp->next;
-	}
-	av = ft_strsplit(tmp->line, '-');
-	if (num_w(av) == 2 && num_c(tmp->line, '-') == 1)
-		tmp->isedge = 1;
-	del_split(av);
-}
-
-void	check_xy(t_val *head)
-{
-	t_val	*tmp;
-	char	**av;
-
-	if (!head)
-		return ;
-	if (!(tmp = head->next))
-		return ;
-	while (tmp->next)
-	{
-		av = ft_strsplit(tmp->line, ' ');
-		if ((num_w(av) == 3 && av[0][0] != 'L') || !ft_strcmp
-		(tmp->line, "##start") || !ft_strcmp(tmp->line, "##end"))
-		{
-			if (num_w(av) == 3 && check_realnum(av[1]) && check_realnum(av[2]))
-				tmp->isxy = 1;
-		}
-		else
-		{
-			del_split(av);
-			break ;
-		}
-		del_split(av);
-		tmp = tmp->next;
-	}
-	check_edge(tmp);
-}
-
-void	check_commands(t_val *head)
-{
-	t_val *tmp;
-
-	tmp = head;
-	if (!head)
-		return ;
-	while (tmp->next)
-	{
-		if (!ft_strcmp(tmp->line, "##start") && tmp->next->isxy == 1)
-			tmp->isstart = 1;
-		if (!ft_strcmp(tmp->line, "##end") && tmp->next->isxy == 1)
-			tmp->isend = 1;
-		tmp = tmp->next;
-	}
-}
-
-void	split_name_xy(t_val *head)
-{
-	t_val	*tmp;
-	char	**av;
-
-	tmp = head;
-	if (!head)
-		return ;
-	while (tmp->next)
-	{
-		if (tmp->isxy == 1)
-		{
-			av = ft_strsplit(tmp->line, ' ');
-			tmp->name = ft_strdup(av[0]);
-			tmp->x_y = ft_strjoin_free(ft_strjoin(av[1], " "), av[2], 1, 0);
-			del_split(av);
-		}
-		tmp = tmp->next;
-	}
-}
-
-void	check_dupl_xy(t_val *a, t_val *b)
-{
-	t_val *tmp;
-
-	tmp = b;
-	if (!a || !b)
-		return ;
-	while (a->next)
-	{
-		while (b->next)
-		{
-			if (a->isxy && b->isxy && ft_strcmp(a->line, b->line) && a != b)
-				if (((ft_strcmp(a->name, b->name) && !ft_strcmp(a->x_y, b->x_y))
-				|| (!ft_strcmp(a->name, b->name) && ft_strcmp(a->x_y, b->x_y))))
-					a->isxy = 0;
-			b = b->next;
-		}
-		b = tmp;
-		a = a->next;
-	}
-}
-
-t_val	*split_names(t_val **head)
-{
-	t_val	*tmp;
-	char	**av;
-
-	tmp = *head;
-	if (!head)
-		return (NULL);
-	while (tmp)
-	{
-		if (tmp->isedge == 1)
-		{
-			av = ft_strsplit(tmp->line, '-');
-			tmp->name1 = ft_strcmp(av[0], av[1]) < 0 ?
-			ft_strdup(av[0]) : ft_strdup(av[1]);
-			tmp->name2 = ft_strcmp(av[0], av[1]) < 0 ?
-			ft_strdup(av[1]) : ft_strdup(av[0]);
-			free(tmp->line);
-			tmp->line = ft_strjoin_free(ft_strjoin(tmp->name1, "-"),
-			tmp->name2, 1, 0);
-			del_split(av);
-		}
-		tmp = tmp->next;
-	}
-	return (*head);
-}
-
-void	del_list_valid(t_val **del)
-{
-	ft_memdel((void**)(&(*del)->line));
-	ft_memdel((void**)(&(*del)->name));
-	ft_memdel((void**)(&(*del)->x_y));
-	ft_memdel((void**)(&(*del)->name1));
-	ft_memdel((void**)(&(*del)->name2));
-	free(*del);
-}
-
-void	check_new_names(t_val *a, t_val *b)
-{
-	t_val	*tmp;
-	int		flag;
-
-	flag = 0;
-	tmp = b;
-	if (!a || !b)
-		return ;
-	while (a->next)
-	{
-		while (b->next)
-		{
-			if (b->name && a->name1 && a->name2
-			&& (!ft_strcmp(b->name, a->name1) || !ft_strcmp(b->name, a->name2)))
-				flag = 1;
-			b = b->next;
-		}
-		if (flag == 0)
-			a->isedge = 0;
-		else
-			flag = 0;
-		b = tmp;
-		a = a->next;
-	}
-}
-
-int		checker(t_val *head)
-{
-	t_val	*t;
-	int		start;
-	int		end;
-
-	start = 0;
-	end = 0;
-	t = head;
-	if (!head)
-		return (FALSE);
-	while (t)
-	{
-		if (t->isnum + t->isstart + t->isend + t->isxy + t->isedge != 1)
-			return (FALSE);
-		if (t->isstart == 1)
-			start++;
-		if (t->isend == 1)
-			end++;
-		t = t->next;
-	}
-	if (start == 0 || end == 0)
-		return (FALSE);
-	return (TRUE);
-}
-
 t_mod	*create_list_mod(t_const *con, t_val *map)
 {
 	t_mod *list;
@@ -511,7 +119,7 @@ t_mod	*create_list_mod(t_const *con, t_val *map)
 	return (list);
 }
 
-t_mod		*creator_mod(t_const *con, t_val *map, t_mod *head) //<-----------ошибки
+t_mod	*creator_mod(t_const *con, t_val *map, t_mod *head) //<-----------ошибки
 {
 	t_mod *tmp;
 
@@ -605,7 +213,7 @@ int		check_deadlock(t_mod *a, t_mod *b)
 	return (flag == 0 ? FALSE : TRUE);
 }
 
-t_mod		*scrolling_mod(t_mod **h)
+t_mod	*scrolling_mod(t_mod **h)
 {
 	t_mod *tmp;
 
@@ -652,19 +260,6 @@ t_mod	*del_deadlock(t_mod **head)
 		}
 	}
 	return (h);
-}
-
-t_val	*scrolling_valid(t_val *map)
-{
-	if (!map)
-		return (NULL);
-	while (map)
-	{
-		if (map->isedge)
-			break ;
-		map = map->next;
-	}
-	return (map);
 }
 
 int		check_deadlock_start_end_add(t_mod *a, t_mod *b)
@@ -1001,7 +596,7 @@ int		check_dubl_way(t_mod *a, t_mod *b)
 	return (flag == 0 ? FALSE : TRUE);
 }
 
-t_mod		*create_list_mod_way(t_const *con, char *s)
+t_mod	*create_list_mod_way(t_const *con, char *s)
 {
 	t_mod *list;
 	char **arr;
@@ -1024,7 +619,7 @@ t_mod		*create_list_mod_way(t_const *con, char *s)
 	return (list);
 }
 
-t_mod		*creator_mod_way(t_const *con, char *s, t_mod *head) //<-----------ошибки
+t_mod	*creator_mod_way(t_const *con, char *s, t_mod *head) //<-----------ошибки
 {
 	t_mod *tmp;
 
@@ -1037,7 +632,7 @@ t_mod		*creator_mod_way(t_const *con, char *s, t_mod *head) //<-----------оши
 	return (tmp);
 }
 
-t_mod		*split_way(char *s, t_const *list)
+t_mod	*split_way(char *s, t_const *list)
 {
 	t_mod *head;
 	char **arr;
@@ -1233,71 +828,6 @@ void	del_tab(char *tab[START][START])
 	}
 }
 
-t_const	*create_list_const(int ants, char *start, char *end)
-{
-	t_const *list;
-
-	if (!(list = (t_const*)malloc(sizeof(*list))))
-		return (NULL);
-	list->ants = ants;
-	list->start = start ? ft_strdup(start) : NULL;
-	list->end = end ? ft_strdup(end) : NULL;
-	return (list);
-}
-
-void	del_list_const(t_const **list)
-{
-	free((*list)->start);
-	free((*list)->end);
-	free(*list);
-}
-
-void	check_dupl_start(t_val *head)
-{
-	char *tmp;
-
-	tmp = NULL;
-	while (head->next)
-	{
-		if (head->isstart)
-			break ;
-		head = head->next;
-	}
-	if (head->next)
-		tmp = ft_strdup(head->next->line);
-	head = head->next;
-	while (head && head->next)
-	{
-		if (head->isstart && ft_strcmp(head->next->line, tmp))
-			head->isstart = 0;
-		head = head->next;
-	}
-	ft_memdel((void**)(&tmp));
-}
-
-void	check_dupl_end(t_val *head)
-{
-	char *tmp;
-
-	tmp = NULL;
-	while (head->next)
-	{
-		if (head->isend)
-			break ;
-		head = head->next;
-	}
-	if (head->next)
-		tmp = ft_strdup(head->next->line);
-	head = head->next;
-	while (head && head->next)
-	{
-		if (head->isend && ft_strcmp(head->next->line, tmp))
-			head->isend = 0;
-		head = head->next;
-	}
-	ft_memdel((void**)(&tmp));
-}
-
 void	printer_arr_way(t_way *arr[START])
 {
 	int i;
@@ -1310,7 +840,7 @@ void	printer_arr_way(t_way *arr[START])
 	}
 }
 
-void 	del_arr_way(t_way *arr[START])
+void	del_arr_way(t_way *arr[START])
 {
 	int i;
 
@@ -1659,7 +1189,7 @@ void	solution(char **s, t_const *list, t_val *old)
 			i++;
 		}
 	//}
-	check_way(arr);
+	//check_way(arr);
 	capacity(arr, i == 0 ? i + 1 : i);
 	horde_is_coming(arr); //--------------------------------start
 	//printer_arr_way(arr);
@@ -1974,8 +1504,8 @@ void	modify(t_const *list, t_val *map)
 
 	count = -1;
 	ft_bzero(hub, START);
-	if (!(map = scrolling_valid(map)))
-		return ;
+	// if (!(map = scrolling_valid(map)))
+	// 	return ;
 	//printer_valid(map);
 	head = val_to_mod(list, map);
 	if (simple_solve(head))
@@ -1983,86 +1513,14 @@ void	modify(t_const *list, t_val *map)
 	else
 		killer(&head, count, hub, list);//----- рекурсивно формируем хаб путей
 
-	int i = -1;
-	while (hub[++i])
-	{
-		ft_putendl(ft_itoa(i));
-		ft_putendl(hub[i]);
-	}
+	// int i = -1;
+	// while (hub[++i])
+	// {
+	// 	ft_putendl(ft_itoa(i));
+	// 	ft_putendl(hub[i]);
+	// }
 
 	solution(hub, list, map);//----------------расшифровка хаба путей
 	del_hub(hub);
 	del_roll_mod(&head);
-}
-
-void	read_const(t_val *map)
-{
-	t_val	*h;
-	t_const *list;
-
-	h = map;
-	if (!(list = create_list_const(0, NULL, NULL)))
-		return ;
-	while (map)
-	{
-		if (map->isedge)
-			break ;
-		list->ants = map->isnum ? ft_atoi(map->line) : list->ants;
-		if (map->isstart)
-		{
-			free(list->start);
-			list->start = ft_strdup(map->next->name);
-		}
-		if (map->isend)
-		{
-			free(list->end);
-			list->end = ft_strdup(map->next->name);
-		}
-		map = map->next;
-	}
-	modify(list, h); //-------------------- читаем список t_val в список t_mod
-	del_list_const(&list);
-}
-
-void	lemin(t_val **head)
-{
-	check_xy(*head);
-	split_name_xy(*head);
-	check_dupl_xy(*head, *head);
-	check_commands(*head);
-	check_dupl_start(*head);
-	check_dupl_end(*head);
-	*head = split_names(head);
-	check_new_names(*head, *head);
-	//printer_valid(*head);
-	if (checker(*head))
-		read_const(*head); //----------- читаем константы карты в лист t_const
-	else
-		ft_putendl("ERROR");
-}
-
-int		main(void) 	//---------------------------- читаем карту в список t_val
-{
-	t_val	*head;
-	char	*arr;
-
-	head = NULL;
-	arr = NULL;
-	while (ft_get_next_line(0, &arr))
-	{
-		if (!head && not_comment(arr) && check_realnum(arr))
-		{
-			head = create_list_valid(arr);
-			head->isnum = 1;
-		}
-		else if (head && not_comment(arr))
-			head = creator_valid(head, arr);
-		ft_memdel((void**)(&arr));
-	}
-	ft_memdel((void**)(&arr));
-	if (!head)
-		return (0);
-	lemin(&head); //-------------------------------- проверяем валидность карты
-	del_roll_valid(&head);
-	return (0);
 }
